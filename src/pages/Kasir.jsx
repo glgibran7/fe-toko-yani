@@ -659,6 +659,34 @@ const Kasir = () => {
     setDetailTransaksiData(null);
   };
 
+  const getTodayRange = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const tanggal = `${yyyy}-${mm}-${dd}`;
+    return { tanggal_awal: tanggal, tanggal_akhir: tanggal };
+  };
+
+  const getMonthRange = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const firstDay = `${yyyy}-${mm}-01`;
+    const lastDay = `${yyyy}-${mm}-${String(
+      new Date(yyyy, today.getMonth() + 1, 0).getDate()
+    ).padStart(2, "0")}`;
+    return { tanggal_awal: firstDay, tanggal_akhir: lastDay };
+  };
+
+  const getYearRange = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const firstDay = `${yyyy}-01-01`;
+    const lastDay = `${yyyy}-12-31`;
+    return { tanggal_awal: firstDay, tanggal_akhir: lastDay };
+  };
+
   return (
     <div className="">
       {alert.show && (
@@ -1306,23 +1334,60 @@ const Kasir = () => {
                     ))}
                   </select>
                 )}
-                {/* Input tanggal & pelanggan sudah ada */}
 
+                {/* Dropdown filter tanggal */}
+                <select
+                  className="border rounded px-2 py-1 text-xs"
+                  value={
+                    filterHistoryTransaksi.tanggal_awal ===
+                      getTodayRange().tanggal_awal &&
+                    filterHistoryTransaksi.tanggal_akhir ===
+                      getTodayRange().tanggal_akhir
+                      ? "today"
+                      : filterHistoryTransaksi.tanggal_awal ===
+                          getMonthRange().tanggal_awal &&
+                        filterHistoryTransaksi.tanggal_akhir ===
+                          getMonthRange().tanggal_akhir
+                      ? "month"
+                      : filterHistoryTransaksi.tanggal_awal ===
+                          getYearRange().tanggal_awal &&
+                        filterHistoryTransaksi.tanggal_akhir ===
+                          getYearRange().tanggal_akhir
+                      ? "year"
+                      : ""
+                  }
+                  onChange={(e) => {
+                    let range = {};
+                    if (e.target.value === "today") range = getTodayRange();
+                    else if (e.target.value === "month")
+                      range = getMonthRange();
+                    else if (e.target.value === "year") range = getYearRange();
+                    setFilterHistoryTransaksi((prev) => ({
+                      ...prev,
+                      ...range,
+                    }));
+                  }}
+                >
+                  <option value="">Pilih Periode</option>
+                  <option value="today">Hari ini</option>
+                  <option value="month">Bulan ini</option>
+                  <option value="year">Tahun ini</option>
+                </select>
+
+                {/* Date picker untuk custom tanggal */}
                 <input
                   type="date"
-                  name="tanggal_awal"
+                  className="border rounded px-2 py-1 text-xs"
                   value={filterHistoryTransaksi.tanggal_awal}
-                  onChange={handleFilterRiwayatTransaksiChange}
-                  className="border rounded px-2 py-1 text-xs"
+                  onChange={(e) =>
+                    setFilterHistoryTransaksi((prev) => ({
+                      ...prev,
+                      tanggal_awal: e.target.value,
+                      tanggal_akhir: e.target.value,
+                    }))
+                  }
                 />
 
-                <input
-                  type="date"
-                  name="tanggal_akhir"
-                  value={filterHistoryTransaksi.tanggal_akhir}
-                  onChange={handleFilterRiwayatTransaksiChange}
-                  className="border rounded px-2 py-1 text-xs"
-                />
                 <select
                   name="id_pelanggan"
                   value={filterHistoryTransaksi.id_pelanggan}
