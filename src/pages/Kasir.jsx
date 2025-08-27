@@ -639,6 +639,26 @@ const Kasir = () => {
     return cocokCari && cocokLokasi && stokTersedia;
   });
 
+  const [detailTransaksiOpen, setDetailTransaksiOpen] = useState(false);
+  const [detailTransaksiData, setDetailTransaksiData] = useState(null);
+
+  const openDetailTransaksi = async (id_transaksi) => {
+    try {
+      const res = await api.get(`/transaksi/${id_transaksi}`, {
+        headers: getAuthHeaders(),
+      });
+      // Ambil data pertama dari array response
+      setDetailTransaksiData(res.data?.data?.[0] || null);
+      setDetailTransaksiOpen(true);
+    } catch (err) {
+      showAlert("error", "Gagal mengambil detail transaksi");
+    }
+  };
+  const closeDetailTransaksi = () => {
+    setDetailTransaksiOpen(false);
+    setDetailTransaksiData(null);
+  };
+
   return (
     <div className="">
       {alert.show && (
@@ -1342,9 +1362,8 @@ const Kasir = () => {
                         <th className="px-2 py-1">Lokasi</th>
                         <th className="px-2 py-1">Total Belanja</th>
                         <th className="px-2 py-1">Status Hutang</th>
-
-                        {/* <th className="px-2 py-1">Lokasi Asal</th>
-                        <th className="px-2 py-1">Lokasi Tujuan</th> */}
+                        <th className="px-2 py-1">Aksi</th>{" "}
+                        {/* Tambahkan kolom aksi */}
                       </tr>
                     </thead>
                     <tbody>
@@ -1374,8 +1393,16 @@ const Kasir = () => {
                               {item.status_hutang || "-"}
                             </span>
                           </td>
-                          {/* <td className="px-2 py-1">{item.lokasi_asal}</td>
-                          <td className="px-2 py-1">{item.lokasi_tujuan}</td> */}
+                          <td className="px-2 py-1">
+                            <button
+                              className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-3 py-1 rounded-[10px] text-xs"
+                              onClick={() =>
+                                openDetailTransaksi(item.id_transaksi)
+                              }
+                            >
+                              Detail
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1455,6 +1482,88 @@ const Kasir = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {detailTransaksiOpen && detailTransaksiData && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg relative">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-bold">Detail Transaksi</h2>
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={closeDetailTransaksi}
+                >
+                  <IoClose size={24} />
+                </button>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="font-semibold">ID Transaksi:</span>{" "}
+                  {detailTransaksiData.id_transaksi}
+                </div>
+                <div>
+                  <span className="font-semibold">Tanggal:</span>{" "}
+                  {detailTransaksiData.tanggal}
+                </div>
+                <div>
+                  <span className="font-semibold">Kasir:</span>{" "}
+                  {detailTransaksiData.username}
+                </div>
+                <div>
+                  <span className="font-semibold">Lokasi:</span>{" "}
+                  {detailTransaksiData.nama_lokasi}
+                </div>
+                <div>
+                  <span className="font-semibold">Pelanggan:</span>{" "}
+                  {detailTransaksiData.nama_pelanggan || "-"}
+                </div>
+                <div>
+                  <span className="font-semibold">Total:</span> Rp.{" "}
+                  {detailTransaksiData.total?.toLocaleString("id-ID")}
+                </div>
+                <div>
+                  <span className="font-semibold">Tunai:</span> Rp.{" "}
+                  {detailTransaksiData.tunai?.toLocaleString("id-ID")}
+                </div>
+                <div>
+                  <span className="font-semibold">Kembalian:</span> Rp.{" "}
+                  {detailTransaksiData.kembalian?.toLocaleString("id-ID")}
+                </div>
+                <div>
+                  <span className="font-semibold">Sisa Hutang:</span> Rp.{" "}
+                  {detailTransaksiData.sisa_hutang?.toLocaleString("id-ID")}
+                </div>
+                <div>
+                  <span className="font-semibold">Status Hutang:</span>{" "}
+                  {detailTransaksiData.status_hutang || "-"}
+                </div>
+                <div>
+                  <span className="font-semibold">Total Hutang Pelanggan:</span>{" "}
+                  Rp.{" "}
+                  {detailTransaksiData.total_hutang?.toLocaleString("id-ID")}
+                </div>
+                <div>
+                  <span className="font-semibold">Item:</span>
+                  <ul className="list-disc ml-5">
+                    {detailTransaksiData.items?.map((itm, i) => (
+                      <li key={i}>
+                        {itm.nama_produk} ({itm.qty} x Rp.
+                        {itm.harga_jual?.toLocaleString("id-ID")})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div className="flex justify-end mt-4">
+                <button
+                  className="px-4 py-1 text-sm rounded-[10px] bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  onClick={closeDetailTransaksi}
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
         )}
