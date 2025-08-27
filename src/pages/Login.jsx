@@ -50,7 +50,7 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-[#72BDAF] to-[#1E686D] relative">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-[#FF4778] to-[#FF87A7] relative">
       {/* Wave image at the bottom */}
       <img
         src="images/wave.png"
@@ -117,7 +117,7 @@ function Login() {
             </div> */}
             <button
               type="submit"
-              className="w-full px-4 py-2 mt-8 text-white rounded-lg bg-[#1E686D] rounded-[15px] hover:bg-[#72BDAF] transition"
+              className="w-full px-4 py-2 mt-8 text-white rounded-lg bg-[#B63E5D] rounded-[15px] hover:bg-[#F472B6] transition"
               disabled={loading}
             >
               {loading ? "Memproses..." : "Login"}
@@ -141,9 +141,9 @@ function Login() {
       {/* Right side - Image */}
       <div className="md:w-1/2 w-full flex items-center justify-center z-10">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white">BASMALAH PLASTIK</h1>
+          {/* <h1 className="text-3xl font-bold text-white">TOKO YANI</h1> */}
           <img
-            src="images/kasir.png"
+            src="images/tokoyani.png"
             alt="Login Illustration"
             className="w-80 h-auto mt-4 mb-4"
           />

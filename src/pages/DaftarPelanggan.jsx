@@ -146,7 +146,7 @@ const DaftarPelanggan = () => {
   const SortIcon = ({ active, asc }) => (
     <svg
       className={`w-3 h-3 ms-1.5 inline ${
-        active ? "text-[#1E686D]" : "text-gray-400"
+        active ? "text-[#FF4778]" : "text-gray-400"
       }`}
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
@@ -301,7 +301,7 @@ const DaftarPelanggan = () => {
                   {/* <td className="px-1 py-1">{item.alamat}</td> */}
                   <td className="px-1 py-1">
                     <button
-                      className="bg-[#1E686D] hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs"
+                      className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-3 py-1 rounded-lg text-xs"
                       onClick={() => openEditModal(item)}
                     >
                       Edit
@@ -320,7 +320,7 @@ const DaftarPelanggan = () => {
         </div>
         <div className="flex items-center justify-between mt-4">
           <button
-            className="bg-[#1E686D] p-2 rounded-[10px] text-xs text-white font-semibold hover:bg-green-600"
+            className="bg-[#FF4778] p-2 rounded-[10px] text-xs text-white font-semibold hover:bg-[#FF87A7]"
             onClick={openAddModal}
           >
             Tambah Pelanggan
@@ -381,7 +381,7 @@ const DaftarPelanggan = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1 text-sm rounded-lg bg-[#1E686D] hover:bg-green-600 text-white"
+                  className="px-4 py-1 text-sm rounded-lg bg-[#FF4778] hover:bg-[#FF87A7] text-white"
                 >
                   Simpan
                 </button>
@@ -434,7 +434,7 @@ const DaftarPelanggan = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1 text-sm rounded-lg bg-[#1E686D] hover:bg-green-600 text-white"
+                  className="px-4 py-1 text-sm rounded-lg bg-[#FF4778] hover:bg-[#FF87A7] text-white"
                 >
                   Simpan
                 </button>

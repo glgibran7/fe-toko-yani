@@ -52,14 +52,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   return (
     <div
-      className={`h-screen bg-[#1E686D] text-white transition-all duration-300 ${
+      className={`h-screen bg-[#FF4778] text-white transition-all duration-300 ${
         isOpen ? "w-64" : "w-16"
       } flex flex-col`}
     >
       {/* Header */}
       <div className="flex flex-col gap-1 p-4">
         <div className="flex items-center justify-between">
-          {isOpen && <h1 className="text-lg font-bold">BASMALAH PLASTIK</h1>}
+          {isOpen && <h1 className="text-lg font-bold">TOKO YANI</h1>}
 
           <button onClick={() => setIsOpen(!isOpen)} className="text-white">
             {isOpen ? <X size={20} /> : <Menu size={30} />}
@@ -81,7 +81,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               [
                 "w-full flex items-center gap-3 text-left p-3 rounded-lg transition",
                 isActive
-                  ? "bg-green-400 text-white font-bold"
+                  ? "bg-[#FF87A7] text-white font-bold"
                   : "bg-white text-black hover:bg-[#D8D8D8]",
               ].join(" ")
             }
@@ -95,7 +95,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Logout */}
       <div className="p-4 border-t border-white">
         <button
-          className="flex text-bold items-center gap-2 w-full text-left text-sm hover:text-green-400"
+          className="flex text-bold items-center gap-2 w-full text-left text-sm hover:text-black"
           onClick={() => {
             const confirmLogout = window.confirm("Anda yakin ingin logout?");
             if (confirmLogout) {

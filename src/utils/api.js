@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://api.basmalahplastik.shop", // Ganti ke baseURL API production
+  baseURL: "https://api.tokoyani.shop", // Ganti ke baseURL API production
   // baseURL: "http://127.0.0.1:5000",
   headers: { "Content-Type": "application/json" },
 });

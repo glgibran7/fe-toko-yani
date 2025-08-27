@@ -444,7 +444,7 @@ const Stock = () => {
   const SortIcon = ({ active, asc }) => (
     <svg
       className={`w-3 h-3 ms-1.5 inline ${
-        active ? "text-[#1E686D]" : "text-gray-400"
+        active ? "text-[#FF4778]" : "text-gray-400"
       }`}
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
@@ -723,13 +723,13 @@ const Stock = () => {
 
           <div className="relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
-              <IoQrCodeOutline size={20} className="text-[#1E686D]" />
+              <IoQrCodeOutline size={20} className="text-[#FF4778]" />
             </span>
             <input
               ref={scanInputRef}
               type="text"
               placeholder="Scan/masukkan barcode..."
-              className="border rounded-[10px] px-2 py-1.5 text-sm w-[210px] hover:border-[#1E686D] focus:outline-none focus:ring-2 focus:ring-[#1E686D] pl-8"
+              className="border rounded-[10px] px-2 py-1.5 text-sm w-[210px] hover:border-[#FF4778] focus:outline-none focus:ring-2 focus:ring-[#FF4778] pl-8"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && e.target.value.trim()) {
                   const barcode = e.target.value.trim();
@@ -754,14 +754,14 @@ const Stock = () => {
           <form className="flex items-center gap-2">
             <label
               for="default-search"
-              class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
+              class="mb-2 text-sm font-medium text-gray-900 sr-only"
             >
               Search
             </label>
             <div class="relative">
               <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                 <svg
-                  class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                  class="w-4 h-4 text-gray-500"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -779,7 +779,7 @@ const Stock = () => {
               <input
                 type="search"
                 id="default-search"
-                class="block w-50 p-2 ps-10 text-sm text-gray-900 border border-[#1E686D] rounded-[15px] bg-gray-50 focus:ring-[#1E686D] focus:border-[#1E686D] dark:bg-[#1E686D] dark:border-[#1E686D] dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                class="block w-50 p-2 ps-10 text-sm text-gray-900 border border-[#FF4778] rounded-[15px] bg-gray-50 focus:ring-[#FF4778] focus:border-[#FF4778] "
                 placeholder="Cari barang..."
                 required
                 value={search}
@@ -790,7 +790,7 @@ const Stock = () => {
               <select
                 value={selectedLokasi}
                 onChange={(e) => setSelectedLokasi(e.target.value)}
-                className="border border-[#1E686D] rounded-[10px] text-sm px-3 py-2 hover:border-[#1E686D] focus:outline-none focus:ring-2 focus:ring-[#1E686D] dark:bg-[#1E686D] dark:border-[#1E686D] dark:text-white capitalize"
+                className="border border-[#FF4778] rounded-[15px] text-sm px-3 py-2 hover:border-[#FF4778] focus:outline-none focus:ring-2 focus:ring-[#FF4778]  capitalize"
               >
                 {lokasiList.map((lokasi) => (
                   <option key={lokasi.id_lokasi} value={lokasi.id_lokasi}>
@@ -940,7 +940,7 @@ const Stock = () => {
                       <td className="px-0.5 py-0.5 text-center">
                         {!readOnly && (
                           <button
-                            className="bg-[#1E686D] hover:bg-green-600 text-white px-1 py-1 rounded-[10px] text-xs"
+                            className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-1 py-1 rounded-[10px] text-xs"
                             onClick={() => handleAddToMutasi(item)}
                             title="Mutasi"
                           >
@@ -1019,7 +1019,7 @@ const Stock = () => {
         <div className="flex items-center justify-between mt-4">
           <div className="flex space-x-2">
             <button
-              className="bg-[#1E686D] p-2 rounded-[10px] text-xs text-white hover:bg-green-600"
+              className="bg-[#FF4778] p-2 rounded-[10px] text-xs text-white hover:bg-[#FF87A7]"
               onClick={openAddModal}
             >
               Tambah Stock Barang
@@ -1041,7 +1041,7 @@ const Stock = () => {
             </button>
           </div>
         </div>
-        <div className="bg-white border border-[#1E686D] rounded-lg p-2 shadow-md mt-4">
+        <div className="bg-white border border-[#FF4778] rounded-lg p-2 shadow-md mt-4">
           <div
             className="relative overflow-x-auto"
             style={{ maxHeight: "170px", overflowY: "auto" }}
@@ -1112,7 +1112,7 @@ const Stock = () => {
                 </table>
                 <div className="flex justify-end mt-2">
                   <button
-                    className="bg-[#1E686D] hover:bg-green-600 text-white px-4 py-1 rounded text-xs"
+                    className="bg-[#FF4778] hover:bg-green-600 text-white px-4 py-1 rounded text-xs"
                     onClick={openMutasiModal}
                   >
                     Kirim
@@ -1214,7 +1214,7 @@ const Stock = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1 text-sm rounded-[10px] bg-[#1E686D] hover:bg-green-600 text-white"
+                  className="px-4 py-1 text-sm rounded-[10px] bg-[#FF4778] hover:bg-green-600 text-white"
                 >
                   Simpan
                 </button>
@@ -1319,7 +1319,7 @@ const Stock = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1 text-sm rounded-[10px] bg-[#1E686D] hover:bg-green-600 text-white"
+                  className="px-4 py-1 text-sm rounded-[10px] bg-[#FF4778] hover:bg-green-600 text-white"
                 >
                   Simpan
                 </button>
@@ -1379,7 +1379,7 @@ const Stock = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1 text-sm rounded-[10px] bg-[#1E686D] hover:bg-green-600 text-white"
+                  className="px-4 py-1 text-sm rounded-[10px] bg-[#FF4778] hover:bg-green-600 text-white"
                   onClick={handleMutasiSubmit}
                 >
                   Simpan

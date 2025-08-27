@@ -9,8 +9,8 @@ const Tentang = () => {
       <h1 className="text-2xl font-bold mb-2">Tentang</h1>
       <div className="bg-white rounded-lg border border-black p-4 shadow-md">
         <p className="text-gray-600 mb-4 text-justify">
-          Sistem Kasir Online "Basmalah Plastik" adalah aplikasi berbasis web
-          yang membantu pengelolaan transaksi penjualan, stok barang, dan data
+          Sistem Kasir Online "Toko Yani" adalah aplikasi berbasis web yang
+          membantu pengelolaan transaksi penjualan, stok barang, dan data
           pelanggan secara efisien dan mudah diakses.
         </p>
         <ul className="list-disc pl-5 text-gray-700 mb-4">
