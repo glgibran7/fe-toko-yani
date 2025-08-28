@@ -55,118 +55,111 @@ const Kasir = () => {
   const handlePrintStruk = () => {
     let printContents = strukRef.current.innerHTML;
     const printWindow = window.open("", "", "width=300,height=600");
-    const logoBase64 = "images/icon-outlook.svg"; // base64 logo
-    const nomorTransaksi = "TRX-" + Date.now();
+    const logoBase64 = "images/icon-outlook.svg";
     const tanggalStr = new Date().toLocaleString("id-ID");
 
     printWindow.document.write(`
 <html>
   <head>
     <title>Struk Belanja</title>
-   <style>
-    @media print {
-    body {
-      margin: 0;
-      padding: 0;
-    }
-  }
-  body {
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    margin: 0;
-    padding: 0;
-    background: #fff;
-    color: #000;
-  }
-
-  .struk {
-    max-width: 280px;
-    margin: auto;
-    padding: 12px 6px;
-  }
-
-  .logo {
-    display: block;
-    margin: 0 auto 5px;
-    max-height: 60px;
-  }
-
-  .struk-header {
-    text-align: center;
-    font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 4px;
-  }
-
-  .subheader {
-    text-align: center;
-    font-size: 13px;
-    margin-bottom: 10px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  th, td {
-    font-size: 14px;
-    padding: 4px 2px;
-  }
-
-  th {
-    border-bottom: 1px solid #000;
-  }
-
-  .right {
-    text-align: right;
-  }
-
-  .center {
-    text-align: center;
-  }
-
-  .total {
-    border-top: 1px dashed #000;
-    margin-top: 8px;
-    padding-top: 8px;
-    font-weight: bold;
-  }
-
-  .thankyou {
-    margin-top: 12px;
-    font-style: italic;
-    text-align: center;
-    font-size: 13px;
-  }
-
-  .note {
-    text-align: center;
-    font-size: 12px;
-    margin-top: 6px;
-    color: #333;
-  }
-</style>
-
+    <style>
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+      }
+      body {
+        font-family: monospace, Arial, sans-serif;
+        font-size: 10px;
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #000;
+      }
+      .struk {
+        width: 58mm;
+        max-width: 58mm;
+        margin: 0 auto;
+        padding: 2px 2px;
+        box-sizing: border-box;
+      }
+      .logo {
+        display: block;
+        margin: 0 auto 2px;
+        max-height: 32px;
+      }
+      .struk-header {
+        text-align: center;
+        font-weight: bold;
+        font-size: 12px;
+        margin-bottom: 2px;
+      }
+      .subheader {
+        text-align: center;
+        font-size: 10px;
+        margin-bottom: 4px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 2px;
+      }
+      th, td {
+        font-size: 10px;
+        padding: 2px 1px;
+        word-break: break-word;
+      }
+      th {
+        border-bottom: 1px solid #000;
+      }
+      .right {
+        text-align: right;
+      }
+      .center {
+        text-align: center;
+      }
+      .total {
+        border-top: 1px dashed #000;
+        margin-top: 4px;
+        padding-top: 4px;
+        font-weight: bold;
+        font-size: 11px;
+      }
+      .thankyou {
+        margin-top: 6px;
+        font-style: italic;
+        text-align: center;
+        font-size: 10px;
+      }
+      .note {
+        text-align: center;
+        font-size: 9px;
+        margin-top: 3px;
+        color: #333;
+      }
+      hr {
+        margin: 2px 0;
+        border: none;
+        border-top: 1px dashed #000;
+      }
+    </style>
   </head>
   <body onload="window.print(); window.close();">
     <div class="struk">
       <img class="logo" src="${logoBase64}" alt="logo" />
       <div class="struk-header">TOKO YANI</div>
       <div class="subheader">Tanggal: ${tanggalStr}</div>
-
       ${printContents}
-
       <div class="thankyou">-- Terima kasih --</div>
       <div class="note">Barang yang sudah dibeli<br/>tidak dapat dikembalikan.</div>
     </div>
   </body>
 </html>
-`);
+  `);
 
     printWindow.document.close();
   };
-
   // Gunakan localStorage untuk data pembelian
   const [dataPembelian, setDataPembelian] = useState(() =>
     getLS("kasir_dataPembelian", [])
@@ -707,7 +700,9 @@ const Kasir = () => {
               <th align="left">Barang</th>
               <th align="center">Satuan</th>
               <th align="center">Qty</th>
-              <th align="right">Harga</th>
+              <th align="right" style={{ minWidth: "32px" }}>
+                Harga
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -724,7 +719,7 @@ const Kasir = () => {
                 <td align="center" className="capitalize">
                   {item.qty}
                 </td>
-                <td align="right">
+                <td align="right" style={{ whiteSpace: "nowrap" }}>
                   Rp{Number(item.harga_jual).toLocaleString("id-ID")}
                 </td>
               </tr>
@@ -734,7 +729,6 @@ const Kasir = () => {
         <hr />
         <div style={{ fontSize: "12px" }}>
           <div>SubTotal: Rp{subtotal.toLocaleString("id-ID")}</div>
-
           <div>
             Diskon: {diskon === 0 ? "-" : `Rp${diskon.toLocaleString("id-ID")}`}
           </div>
@@ -752,9 +746,7 @@ const Kasir = () => {
               ? `Hutang: Rp${Math.abs(kembalian).toLocaleString("id-ID")}`
               : `Kembali: Rp${kembalian.toLocaleString("id-ID")}`}
           </div>
-
           <div>Pelanggan: {capitalizeWords(newItem.nama_pelanggan || "-")}</div>
-
           {newItem.nama_pelanggan && totalHutangPelanggan !== null && (
             <div>
               Total Hutang: Rp

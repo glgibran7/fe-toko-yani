@@ -73,26 +73,40 @@ const Laporan = () => {
       if (filterLokasi) params.id_lokasi = filterLokasi;
       if (filterProduk) params.id_produk = filterProduk;
       if (filterPeriode) params.periode = filterPeriode;
-
       if (tanggalAwal) params.start_date = tanggalAwal;
       if (tanggalAkhir) params.end_date = tanggalAkhir;
 
       api
         .get("/laporan/penjualan-item", { params, headers: getAuthHeaders() })
-        .then((res) => setDataItem(res.data.data))
-        .catch(() => setError("tidak ada data"))
+        .then((res) => {
+          setDataItem(Array.isArray(res.data?.data) ? res.data.data : []);
+          if (!res.data?.data || res.data.data.length === 0) {
+            setError("Tidak ada data ditemukan");
+          }
+        })
+        .catch(() => {
+          setDataItem([]);
+          setError("Gagal mengambil data");
+        })
         .finally(() => setLoading(false));
     } else if (activeTab === "transaksi") {
       const params = {};
       if (filterPeriodeTransaksi) params.periode = filterPeriodeTransaksi;
-
       if (tanggalAwalTransaksi) params.start_date = tanggalAwalTransaksi;
       if (tanggalAkhirTransaksi) params.end_date = tanggalAkhirTransaksi;
 
       api
         .get("/laporan/transaksi", { params, headers: getAuthHeaders() })
-        .then((res) => setDataTransaksi(res.data.data))
-        .catch(() => setError("tidak ada data"))
+        .then((res) => {
+          setDataTransaksi(Array.isArray(res.data?.data) ? res.data.data : []);
+          if (!res.data?.data || res.data.data.length === 0) {
+            setError("Tidak ada data ditemukan");
+          }
+        })
+        .catch(() => {
+          setDataTransaksi([]);
+          setError("Gagal mengambil data");
+        })
         .finally(() => setLoading(false));
     } else if (activeTab === "stok") {
       const params = {};
@@ -104,9 +118,15 @@ const Laporan = () => {
           headers: getAuthHeaders(),
         })
         .then((res) => {
-          setDataStok(res.data.data);
+          setDataStok(Array.isArray(res.data?.data) ? res.data.data : []);
+          if (!res.data?.data || res.data.data.length === 0) {
+            setError("Tidak ada data ditemukan");
+          }
         })
-        .catch(() => setError("Gagal mengambil data"))
+        .catch(() => {
+          setDataStok([]);
+          setError("Gagal mengambil data");
+        })
         .finally(() => setLoading(false));
     }
   }, [
