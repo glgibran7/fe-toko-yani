@@ -7,7 +7,7 @@ const Navbar = ({ isSidebarOpen }) => {
   const navigate = useNavigate();
   // Ambil username dan role dari localStorage
   const [user, setUser] = useState({
-    nama: localStorage.getItem("username") || "User",
+    nama: localStorage.getItem("nama") || "User",
     role: localStorage.getItem("role") || "",
   });
 

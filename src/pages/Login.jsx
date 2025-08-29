@@ -23,6 +23,7 @@ function Login() {
       if (data && data.access_token) {
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("username", username);
+        localStorage.setItem("nama", data.nama || username);
         localStorage.setItem("role", data.role || "-");
         localStorage.setItem("id_lokasi", data.id_lokasi || "-");
         localStorage.setItem("id_kasir", data.id_kasir || "-");
