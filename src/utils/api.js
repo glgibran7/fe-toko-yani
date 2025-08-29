@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://api.tokoyani.shop", // Ganti ke baseURL API production
+  baseURL: process.env.REACT_APP_API_URL,
   // baseURL: "http://127.0.0.1:5000",
   headers: { "Content-Type": "application/json" },
 });
