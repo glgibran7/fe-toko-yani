@@ -804,15 +804,15 @@ const Stock = () => {
 
         <div
           className="relative overflow-x-auto shadow-md sm:rounded-lg"
-          style={{ maxHeight: "200px", overflowY: "auto" }}
+          style={{ maxHeight: "500px", overflowY: "auto" }}
         >
           {loading ? (
             <div className="text-center py-8">Memuat data...</div>
           ) : error ? (
             <div className="text-center text-red-500 py-8">{error}</div>
           ) : (
-            <table className="w-full text-sm text-left text-gray-500">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 z-50 sticky top-0">
+            <table className="w-full text-[17px] text-left text-black">
+              <thead className="text-md text-black uppercase bg-gray-50 z-50 sticky top-0">
                 <tr>
                   <th className="px-0.5 py-0.5 text-center">No</th>
                   <th

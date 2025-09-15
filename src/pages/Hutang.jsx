@@ -698,7 +698,7 @@ const Hutang = () => {
       <div className="">
         <div className="bg-white rounded-[20px] py-4 px-6 shadow-md">
           <div className="flex items-center justify-between space-x-2 mb-4">
-            <p className="text-sm font-semibold">Daftar Hutang Pelangggan</p>
+            <p className="text-md font-semibold">Daftar Hutang Pelangggan</p>
             <form className="flex items-center gap-2">
               <label
                 htmlFor="rekap-search"
@@ -749,8 +749,8 @@ const Hutang = () => {
                 {totalHutangError}
               </div>
             ) : (
-              <table className="w-full text-sm text-left text-gray-500">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+              <table className="w-full text-sm text-left text-black">
+                <thead className="text-md text-black uppercase bg-gray-50 sticky top-0">
                   <tr>
                     <th className="px-1 py-2 text-center">No</th>
                     <th

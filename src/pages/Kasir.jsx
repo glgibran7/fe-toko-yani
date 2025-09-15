@@ -283,6 +283,13 @@ const Kasir = () => {
       .includes(searchPelanggan.trim().toLowerCase())
   );
 
+  const modalSearchRef = useRef(null);
+  useEffect(() => {
+    if (barangModalOpen && modalSearchRef.current) {
+      modalSearchRef.current.focus();
+    }
+  }, [barangModalOpen]);
+
   // Hitung subtotal
   const subtotal = dataPembelian.reduce(
     (sum, item) => sum + Number(item.harga_jual) * Number(item.qty),
@@ -687,7 +694,7 @@ const Kasir = () => {
           className={`fixed top-4 left-1/2 z-[9999] -translate-x-1/2 px-6 py-3 rounded shadow-lg text-white text-sm font-semibold ${
             alert.type === "success" ? "bg-green-600" : "bg-red-600"
           }`}
-          style={{ minWidth: 220, textAlign: "center" }}
+          style={{ Width: 220, textAlign: "center" }}
         >
           {alert.message}
         </div>
@@ -756,7 +763,7 @@ const Kasir = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg py-4 px-6 shadow-md">
+      <div className="bg-white  rounded-lg py-4 px-6 shadow-md">
         <div className="text-sm font-semibold">Pembelian</div>
         <div className="text-xs text-gray-500">
           Detail pembelian ditampilkan disini
@@ -783,7 +790,7 @@ const Kasir = () => {
               ref={scanInputRef}
               type="text"
               placeholder="Scan/masukkan barcode..."
-              className="border rounded-[10px] px-2 py-1.5 text-sm w-56 hover:border-[#FF4778] focus:outline-none focus:ring-2 focus:ring-[#FF4778] pl-8"
+              className="border border-black rounded-[10px] px-2 py-1.5 text-sm w-56 hover:border-[#FF4778] focus:outline-none focus:ring-2 focus:ring-[#FF4778] pl-8"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && e.target.value.trim()) {
                   const kode = e.target.value.trim();
@@ -826,23 +833,41 @@ const Kasir = () => {
               }}
             />
           </div>
+          {/* Input cari barang (share dengan modal daftar produk) */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Cari barang..."
+              className="border border-black rounded-[10px] px-2 py-1.5 text-sm w-56 hover:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+              value={searchProduk}
+              onChange={(e) => setSearchProduk(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (searchProduk.trim() !== "") {
+                    setBarangModalOpen(true);
+                  }
+                }
+              }}
+            />
+          </div>
         </div>
 
         {/*  Tabel pembelian */}
-        <div className="bg-white rounded-lg p-2 shadow-md border border-[#FF4778]">
+        <div className="bg-white h-[450px] rounded-lg p-2 shadow-md border border-[#FF4778]">
           <div
             className="relative overflow-x-auto"
-            style={{ maxHeight: "170px", overflowY: "auto" }}
+            style={{ maxHeight: "450px", overflowY: "auto" }}
           >
             {dataPembelian.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
+              <div className="text-center text-gray-400 py-[225px]">
                 Silahkan scan produk yang dibeli
               </div>
             ) : (
-              <table className="w-full text-sm text-left text-gray-500">
-                <thead className="bg-gray-100 text-gray-700 sticky top-0 z-10">
+              <table className="w-full text-sm text-left text-black">
+                <thead className="bg-red-200 text-black sticky top-0 z-10">
                   <tr>
-                    <th className="px-0.5 py-1 text-left">Produk</th>
+                    <th className="px-0.5 py-1 text-center">Produk</th>
                     <th className="px-0.5 py-1 text-left">Qty</th>
                     <th className="px-0.5 py-1 text-left">Satuan</th>
                     <th className="px-0.5 py-1 text-left">Harga</th>
@@ -895,30 +920,30 @@ const Kasir = () => {
           <div className="flex flex-col md:flex-row gap-8 justify-between mt-2">
             <div className="space-y-4 w-full md:w-1/2 pr-4">
               <div className="flex justify-between">
-                <label className="text-sm text-gray-700 pr-2">SubTotal</label>
+                <label className="text-sm text-black pr-2">SubTotal</label>
                 <input
                   type="text"
                   value={`Rp. ${subtotal.toLocaleString("id-ID")}`}
-                  className="text-sm text-end border rounded-lg px-2 w-40"
+                  className="text-xl text-end border border-black rounded-lg px-2 w-40"
                   readOnly
                 />
               </div>
 
               <div className="flex justify-between items-center">
-                <label className="text-sm text-gray-700 pr-2">Diskon</label>
+                <label className="text-sm text-black pr-2">Diskon</label>
                 <div className="flex gap-2 items-center">
                   <input
                     type="number"
                     min={0}
                     value={diskonValue}
                     onChange={(e) => setDiskonValue(e.target.value)}
-                    className="text-sm text-end border rounded-lg px-2 w-24"
+                    className="text-xl text-end border border-black rounded-lg px-2 w-24"
                     placeholder="Diskon"
                   />
                   <select
                     value={diskonType}
                     onChange={(e) => setDiskonType(e.target.value)}
-                    className="text-xs border rounded-lg px-2 py-1"
+                    className="text-md border border-black rounded-lg px-2 py-1"
                   >
                     <option value="persen">%</option>
                     <option value="nominal">Rp</option>
@@ -927,13 +952,13 @@ const Kasir = () => {
               </div>
 
               <div className="flex justify-between">
-                <label className="text-sm text-gray-700 font-semibold pr-2">
+                <label className="text-sm text-black font-semibold pr-2">
                   Total
                 </label>
                 <input
                   type="text"
                   value={`Rp. ${total.toLocaleString("id-ID")}`}
-                  className="text-sm text-end border rounded-lg px-2 w-40 font-semibold"
+                  className="text-xl text-end border border-black rounded-lg px-2 w-40 font-semibold"
                   readOnly
                 />
               </div>
@@ -941,14 +966,14 @@ const Kasir = () => {
 
             <div className="space-y-4 w-full md:w-1/2 pr-4">
               <div className="flex justify-between">
-                <label className="text-sm text-gray-700 pr-2">Bayar</label>
+                <label className="text-sm text-black pr-2">Bayar</label>
                 <input
                   type="text"
                   inputMode="numeric"
                   min={0}
                   value={bayar.toLocaleString("id-ID")}
                   onChange={handleBayarChange}
-                  className="text-sm text-end border rounded-lg px-2 w-40"
+                  className="text-xl text-end border border-black rounded-lg px-2 w-40"
                 />
               </div>
               <div className="flex justify-between">
@@ -966,7 +991,7 @@ const Kasir = () => {
                       ? `Rp. ${Math.abs(kembalian).toLocaleString("id-ID")}`
                       : `Rp. ${kembalian.toLocaleString("id-ID")}`
                   }
-                  className={`text-sm text-end border rounded-lg px-2 w-40 ${
+                  className={`text-xl text-end border border-black rounded-lg px-2 w-40 ${
                     kembalian < 0 ? "text-red-700" : "text-green-700"
                   }`}
                   readOnly
@@ -981,7 +1006,7 @@ const Kasir = () => {
                     name="nama"
                     value={newItem.nama_pelanggan}
                     onChange={handleAddChange}
-                    className="border rounded-lg px-2 py-1 w-full pr-10 capitalize text-sm"
+                    className="border border-black rounded-lg px-2 py-1 w-full pr-10 capitalize text-xl"
                     placeholder="pilih pelanggan...."
                   />
                   <button
@@ -1000,7 +1025,7 @@ const Kasir = () => {
                   </button>
                   <button
                     type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#FF4778] hover:text-[#FF87A7]"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 hover:text-green-600"
                     title="Pilih dari daftar pelanggan"
                     onClick={openKontakModal}
                   >
@@ -1122,7 +1147,7 @@ const Kasir = () => {
         {/* Modal Daftar Barang */}
         {barangModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl shadow-lg relative">
+            <div className="bg-white rounded-lg p-6 w-full max-w-[1000px] shadow-lg relative">
               <div className="flex justify-between items-center mb-2">
                 <h2 className="text-lg font-bold">Daftar Barang</h2>
                 <button
@@ -1178,9 +1203,10 @@ const Kasir = () => {
                     </svg>
                   </div>
                   <input
+                    ref={modalSearchRef}
                     type="search"
                     id="default-search"
-                    className="block w-50 p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-[15px] bg-gray-50 focus:ring-green-500 focus:border-green-500"
+                    className="block w-50 p-2 ps-10 text-sm text-gray-900 border border-black rounded-[15px] bg-gray-50 focus:ring-green-500 focus:border-green-500"
                     placeholder="Cari barang..."
                     value={searchProduk}
                     onChange={handleSearchProdukChange}
@@ -1189,8 +1215,8 @@ const Kasir = () => {
               </form>
 
               <div
-                className="relative overflow-x-auto shadow-md sm:rounded-lg"
-                style={{ maxHeight: "250px", overflowY: "auto" }}
+                className="relative overflow-x-auto widh shadow-md sm:rounded-lg"
+                style={{ maxHeight: "450px", overflowY: "auto" }}
               >
                 {produkLoading ? (
                   <div className="text-center py-8">Memuat data...</div>
@@ -1199,8 +1225,8 @@ const Kasir = () => {
                     {produkError}
                   </div>
                 ) : (
-                  <table className="w-full text-sm text-left text-gray-500">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 z-50 sticky top-0">
+                  <table className="w-full text-sm text-left text-black">
+                    <thead className="text-xs text-black font-bold uppercase bg-gray-50 z-50 sticky top-0">
                       <tr>
                         <th className="px-2 py-1.5 text-center">No</th>
                         <th className="px-2 py-1.5 text-center">Barcode</th>
@@ -1411,7 +1437,7 @@ const Kasir = () => {
                     Tidak ada data transaksi
                   </div>
                 ) : (
-                  <table className="w-full text-sm text-left text-gray-500">
+                  <table className="w-full text-sm text-left text-black">
                     <thead>
                       <tr>
                         <th className="px-2 py-1">Tanggal</th>
