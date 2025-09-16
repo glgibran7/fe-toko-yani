@@ -152,7 +152,6 @@ const Kasir = () => {
       <div class="subheader">Tanggal: ${tanggalStr}</div>
       ${printContents}
       <div class="thankyou">-- Terima kasih --</div>
-      <div class="note">Barang yang sudah dibeli<br/>tidak dapat dikembalikan.</div>
     </div>
   </body>
 </html>
@@ -208,7 +207,7 @@ const Kasir = () => {
 
   // State untuk modal daftar produk
   const [barangModalOpen, setBarangModalOpen] = useState(false);
-  const [diskonType, setDiskonType] = useState("persen");
+  const [diskonType, setDiskonType] = useState("nominal");
   const [diskonValue, setDiskonValue] = useState("");
 
   const [produkList, setProdukList] = useState([]);
@@ -524,12 +523,48 @@ const Kasir = () => {
   };
 
   const scanInputRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const bayarInputRef = useRef(null);
 
   // Fokus otomatis ke input scan saat komponen dirender
   useEffect(() => {
     if (scanInputRef.current) {
       scanInputRef.current.focus();
     }
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ctrl + B untuk fokus ke Scan Barcode
+      if (e.ctrlKey && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        if (scanInputRef.current) {
+          scanInputRef.current.focus();
+        }
+      }
+
+      // Ctrl + F untuk fokus ke Cari Barang
+      if (e.ctrlKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+      // Ctrl + Y untuk fokus ke Bayar
+      if (e.ctrlKey && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        if (bayarInputRef.current) {
+          bayarInputRef.current.focus();
+        }
+      }
+      if (e.ctrlKey && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        openKontakModal();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const [lokasiList, setLokasiList] = useState([]);
@@ -687,6 +722,13 @@ const Kasir = () => {
     return { tanggal_awal: firstDay, tanggal_akhir: lastDay };
   };
 
+  const bottomPembelianRef = useRef(null);
+  useEffect(() => {
+    if (bottomPembelianRef.current) {
+      bottomPembelianRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [dataPembelian]);
+
   return (
     <div className="">
       {alert.show && (
@@ -713,24 +755,37 @@ const Kasir = () => {
             </tr>
           </thead>
           <tbody>
-            {dataPembelian.map((item, idx) => (
-              <tr key={idx}>
-                <td className="capitalize">
-                  {capitalizeWords(item.nama_produk).length > 18
-                    ? capitalizeWords(item.nama_produk).slice(0, 18) + "…"
-                    : capitalizeWords(item.nama_produk)}
-                </td>
-                <td align="center" className="capitalize">
-                  {capitalizeWords(item.satuan)}
-                </td>
-                <td align="center" className="capitalize">
-                  {item.qty}
-                </td>
-                <td align="right" style={{ whiteSpace: "nowrap" }}>
-                  Rp{Number(item.harga_jual).toLocaleString("id-ID")}
-                </td>
-              </tr>
-            ))}
+            <tbody>
+              {dataPembelian.map((item, idx) => (
+                <tr key={idx}>
+                  <td colSpan="4">
+                    <div className="capitalize">
+                      {capitalizeWords(item.nama_produk).length > 18
+                        ? capitalizeWords(item.nama_produk).slice(0, 18) + "…"
+                        : capitalizeWords(item.nama_produk)}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "10px",
+                      }}
+                    >
+                      <span>
+                        {item.qty} x Rp
+                        {Number(item.harga_jual).toLocaleString("id-ID")}
+                      </span>
+                      <span>
+                        Rp
+                        {(
+                          Number(item.qty) * Number(item.harga_jual)
+                        ).toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </tbody>
         </table>
         <hr />
@@ -836,6 +891,7 @@ const Kasir = () => {
           {/* Input cari barang (share dengan modal daftar produk) */}
           <div className="relative">
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Cari barang..."
               className="border border-black rounded-[10px] px-2 py-1.5 text-sm w-56 hover:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -911,6 +967,7 @@ const Kasir = () => {
                       </td>
                     </tr>
                   ))}
+                  <tr ref={bottomPembelianRef}></tr>
                 </tbody>
               </table>
             )}
@@ -968,11 +1025,22 @@ const Kasir = () => {
               <div className="flex justify-between">
                 <label className="text-sm text-black pr-2">Bayar</label>
                 <input
+                  ref={bayarInputRef}
                   type="text"
                   inputMode="numeric"
                   min={0}
                   value={bayar.toLocaleString("id-ID")}
                   onChange={handleBayarChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (e.shiftKey) {
+                        handleSubmitTanpaCetakStruk(); // Shift+Enter = Simpan tanpa cetak
+                      } else {
+                        handleSubmitTransaksi(); // Enter = Simpan & Cetak
+                      }
+                    }
+                  }}
                   className="text-xl text-end border border-black rounded-lg px-2 w-40"
                 />
               </div>
