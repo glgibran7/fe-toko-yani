@@ -1,4 +1,4 @@
-//ganti lagi
+//ganti lagi lagi
 import React, { useState, useEffect, useRef } from "react";
 import api from "../utils/api";
 import { FaPlusCircle } from "react-icons/fa";
@@ -152,7 +152,7 @@ const Kasir = () => {
       <div class="struk-header">TOKO YANI</div>
       <div class="subheader">Tanggal: ${tanggalStr}</div>
       ${printContents}
-      <div class="thankyou">-- Terima kasih --</div>
+      <div class="thankyou">-- Terima kasih telah berbelanja --</div>
     </div>
   </body>
 </html>
