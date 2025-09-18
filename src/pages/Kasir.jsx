@@ -743,15 +743,7 @@ const Kasir = () => {
       )}
       <h1 className="text-2xl font-bold pb-2">Kasir</h1>
       {/* table struk */}
-      <div
-        ref={strukRef}
-        style={{
-          display: "block",
-          border: "1px dashed gray",
-          padding: "10px",
-          marginBottom: "20px",
-        }}
-      >
+      <div ref={strukRef} style={{ display: "none" }}>
         <table style={{ width: "100%", fontSize: "14px" }}>
           <tbody style={{ fontSize: "14px" }}>
             {dataPembelian.map((item, idx) => (
