@@ -58,6 +58,7 @@ const Kasir = () => {
     const printWindow = window.open("", "", "width=300,height=600");
     const logoBase64 = "images/icon-outlook.svg";
     const tanggalStr = new Date().toLocaleString("id-ID");
+    const alamatToko = "Dusun Muhajirin, Desa Nusa Jaya ";
 
     printWindow.document.write(`
 <html>
@@ -72,7 +73,7 @@ const Kasir = () => {
       }
       body {
         font-family: monospace, Arial, sans-serif;
-        font-size: 10px;
+        font-size: 14px;
         margin: 0;
         padding: 0;
         background: #fff;
@@ -93,12 +94,18 @@ const Kasir = () => {
       .struk-header {
         text-align: center;
         font-weight: bold;
-        font-size: 12px;
+        font-size: 14px;
         margin-bottom: 2px;
+      }
+      .struk-alamat {
+        text-align: center;
+        font-size: 12px;
+        margin-bottom: 4px;
+        white-space: pre-line;
       }
       .subheader {
         text-align: center;
-        font-size: 10px;
+        font-size: 14px;
         margin-bottom: 4px;
       }
       table {
@@ -107,7 +114,7 @@ const Kasir = () => {
         margin-bottom: 2px;
       }
       th, td {
-        font-size: 10px;
+        font-size: 14px;
         padding: 2px 1px;
         word-break: break-word;
       }
@@ -125,17 +132,17 @@ const Kasir = () => {
         margin-top: 4px;
         padding-top: 4px;
         font-weight: bold;
-        font-size: 11px;
+        font-size: 18px;
       }
       .thankyou {
         margin-top: 6px;
         font-style: italic;
         text-align: center;
-        font-size: 10px;
+        font-size: 14px;
       }
       .note {
         text-align: center;
-        font-size: 9px;
+        font-size: 14px;
         margin-top: 3px;
         color: #333;
       }
@@ -150,6 +157,7 @@ const Kasir = () => {
     <div class="struk">
       <img class="logo" src="${logoBase64}" alt="logo" />
       <div class="struk-header">TOKO YANI</div>
+        <div class="struk-alamat">${alamatToko}</div>
       <div class="subheader">Tanggal: ${tanggalStr}</div>
       ${printContents}
       <div class="thankyou">-- Terima kasih telah berbelanja --</div>
@@ -779,7 +787,7 @@ const Kasir = () => {
           </tbody>
         </table>
         <hr />
-        <div style={{ fontSize: "12px", marginTop: "4px" }}>
+        <div style={{ fontSize: "14px", marginTop: "4px" }}>
           {/* Subtotal & Diskon hanya muncul kalau ada diskon */}
           {diskon > 0 && (
             <>
