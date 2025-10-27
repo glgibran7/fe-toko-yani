@@ -73,7 +73,7 @@ const Kasir = () => {
       }
       body {
         font-family: monospace, Arial, sans-serif;
-        font-size: 14px;
+        font-size: 18px;
         margin: 0;
         padding: 0;
         background: #fff;
@@ -114,7 +114,7 @@ const Kasir = () => {
         margin-bottom: 2px;
       }
       th, td {
-        font-size: 14px;
+        font-size: 18px;
         padding: 2px 1px;
         word-break: break-word;
       }
@@ -753,8 +753,8 @@ const Kasir = () => {
       <h1 className="text-2xl font-bold pb-2">Kasir</h1>
       {/* table struk */}
       <div ref={strukRef} style={{ display: "none" }}>
-        <table style={{ width: "100%", fontSize: "14px" }}>
-          <tbody style={{ fontSize: "14px" }}>
+        <table style={{ width: "100%", fontSize: "18px" }}>
+          <tbody style={{ fontSize: "18px" }}>
             {dataPembelian.map((item, idx) => (
               <tr key={idx}>
                 <td colSpan="4">
@@ -767,7 +767,7 @@ const Kasir = () => {
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
-                      fontSize: "14px",
+                      fontSize: "18px",
                     }}
                   >
                     <span>
@@ -787,7 +787,7 @@ const Kasir = () => {
           </tbody>
         </table>
         <hr />
-        <div style={{ fontSize: "14px", marginTop: "4px" }}>
+        <div style={{ fontSize: "18px", marginTop: "4px" }}>
           {/* Subtotal & Diskon hanya muncul kalau ada diskon */}
           {diskon > 0 && (
             <>
