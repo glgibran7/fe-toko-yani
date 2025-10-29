@@ -94,7 +94,7 @@ const Kasir = () => {
       .struk-header {
         text-align: center;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 18px;
         margin-bottom: 2px;
       }
       .struk-alamat {
