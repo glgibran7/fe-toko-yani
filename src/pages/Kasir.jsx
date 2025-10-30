@@ -66,90 +66,99 @@ const Kasir = () => {
     <title>Struk Belanja</title>
     <style>
       @media print {
-        body {
-          margin: 0;
-          padding: 0;
-        }
+        body { margin: 0; padding: 0; }
       }
+
       body {
         font-family: monospace, Arial, sans-serif;
-        font-size: 18px;
+        font-size: 14px;
         margin: 0;
         padding: 0;
         background: #fff;
         color: #000;
       }
+
       .struk {
         width: 58mm;
         max-width: 58mm;
         margin: 0 auto;
-        padding: 2px 2px;
+        padding: 4px;
         box-sizing: border-box;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
+
       .logo {
         display: block;
-        margin: 0 auto 2px;
+        margin: 0 auto 4px;
         max-height: 32px;
       }
+
       .struk-header {
         text-align: center;
         font-weight: bold;
-        font-size: 18px;
+        font-size: 14px;
         margin-bottom: 2px;
       }
+
       .struk-alamat {
         text-align: center;
-        font-size: 12px;
+        font-size: 10px;
         margin-bottom: 4px;
         white-space: pre-line;
       }
+
       .subheader {
         text-align: center;
-        font-size: 14px;
-        margin-bottom: 4px;
+        font-size: 10px;
+        margin-bottom: 6px;
       }
+
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 2px;
       }
-      th, td {
-        font-size: 18px;
-        padding: 2px 1px;
+
+      td {
+        font-size: 13px;
+        padding: 2px 0;
+        vertical-align: top;
         word-break: break-word;
       }
-      th {
-        border-bottom: 1px solid #000;
+
+      .item-row {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2px;
+        border-bottom: 1px dotted #999;
+        padding-bottom: 2px;
       }
-      .right {
-        text-align: right;
+
+      .item-name {
+        font-weight: 600;
+        word-wrap: break-word;
       }
-      .center {
-        text-align: center;
+
+      .item-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
       }
-      .total {
+
+      .total-section {
         border-top: 1px dashed #000;
-        margin-top: 4px;
+        margin-top: 6px;
         padding-top: 4px;
         font-weight: bold;
-        font-size: 18px;
+        font-size: 13px;
       }
+
+      .right { text-align: right; }
       .thankyou {
-        margin-top: 6px;
+        margin-top: 8px;
+        text-align: center;
         font-style: italic;
-        text-align: center;
-        font-size: 14px;
-      }
-      .note {
-        text-align: center;
-        font-size: 14px;
-        margin-top: 3px;
-        color: #333;
-      }
-      hr {
-        margin: 2px 0;
-        border: none;
-        border-top: 1px dashed #000;
+        font-size: 12px;
       }
     </style>
   </head>
@@ -157,14 +166,14 @@ const Kasir = () => {
     <div class="struk">
       <img class="logo" src="${logoBase64}" alt="logo" />
       <div class="struk-header">TOKO YANI</div>
-        <div class="struk-alamat">${alamatToko}</div>
+      <div class="struk-alamat">${alamatToko}</div>
       <div class="subheader">Tanggal: ${tanggalStr}</div>
       ${printContents}
-      <div class="thankyou">-- Terima kasih telah berbelanja --</div>
+      <div class="thankyou">Terima kasih telah berbelanja</div>
     </div>
   </body>
 </html>
-  `);
+`);
 
     printWindow.document.close();
   };
@@ -753,125 +762,75 @@ const Kasir = () => {
       <h1 className="text-2xl font-bold pb-2">Kasir</h1>
       {/* table struk */}
       <div ref={strukRef} style={{ display: "none" }}>
-        <table style={{ width: "100%", fontSize: "18px" }}>
-          <tbody style={{ fontSize: "18px" }}>
-            {dataPembelian.map((item, idx) => (
-              <tr key={idx}>
-                <td colSpan="4">
-                  <div className="capitalize">
-                    {capitalizeWords(item.nama_produk).length > 30
-                      ? capitalizeWords(item.nama_produk).slice(0, 18) + "…"
-                      : capitalizeWords(item.nama_produk)}
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "18px",
-                    }}
-                  >
-                    <span>
-                      {item.qty} x Rp.
-                      {Number(item.harga_jual).toLocaleString("id-ID")}
-                    </span>
-                    <span>
-                      Rp.
-                      {(
-                        Number(item.qty) * Number(item.harga_jual)
-                      ).toLocaleString("id-ID")}
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <hr />
-        <div style={{ fontSize: "18px", marginTop: "4px" }}>
-          {/* Subtotal & Diskon hanya muncul kalau ada diskon */}
-          {diskon > 0 && (
-            <>
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <span style={{ textAlign: "right", flex: 1 }}>SubTotal :</span>
-                <span style={{ textAlign: "right", flex: 1 }}>
-                  Rp{subtotal.toLocaleString("id-ID")}
+        <div>
+          {dataPembelian.map((item, idx) => (
+            <div key={idx} className="item-row">
+              <div className="item-name">
+                {capitalizeWords(item.nama_produk)}
+              </div>
+              <div className="item-info">
+                <span>
+                  {item.qty} x Rp.
+                  {Number(item.harga_jual).toLocaleString("id-ID")}
+                </span>
+                <span>
+                  Rp.{(item.qty * item.harga_jual).toLocaleString("id-ID")}
                 </span>
               </div>
+            </div>
+          ))}
 
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <span style={{ textAlign: "right", flex: 1 }}>Diskon :</span>
-                <span style={{ textAlign: "right", flex: 1 }}>
-                  Rp.{diskon.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </>
-          )}
-
-          {/* Total selalu tampil */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              fontWeight: "bold",
-            }}
-          >
-            <span style={{ textAlign: "right", flex: 1 }}>Total :</span>
-            <span style={{ textAlign: "right", flex: 1 }}>
-              Rp.{total.toLocaleString("id-ID")}
-            </span>
-          </div>
-
-          {/* Bayar selalu tampil */}
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <span style={{ textAlign: "right", flex: 1 }}>Bayar :</span>
-            <span style={{ textAlign: "right", flex: 1 }}>
-              {bayarNominal === 0
-                ? "-"
-                : `Rp.${bayarNominal.toLocaleString("id-ID")}`}
-            </span>
-          </div>
-
-          {/* Kembalian/Hutang selalu tampil */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              fontWeight: "bold",
-              color: kembalian < 0 ? "red" : "black",
-            }}
-          >
-            <span style={{ textAlign: "right", flex: 1 }}>
-              {kembalian < 0 ? "Hutang :" : "Kembali :"}
-            </span>
-            <span style={{ textAlign: "right", flex: 1 }}>
-              {kembalian < 0
-                ? `Rp.${Math.abs(kembalian).toLocaleString("id-ID")}`
-                : `Rp.${kembalian.toLocaleString("id-ID")}`}
-            </span>
-          </div>
-
-          {/* Pelanggan & Hutang hanya muncul kalau ada pelanggan */}
-          {newItem.nama_pelanggan && (
-            <>
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <span style={{ textAlign: "right", flex: 1 }}>Pelanggan :</span>
-                <span style={{ textAlign: "right", flex: 1 }}>
-                  {capitalizeWords(newItem.nama_pelanggan)}
-                </span>
-              </div>
-
-              {totalHutangPelanggan !== null && (
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <span style={{ textAlign: "right", flex: 1 }}>
-                    Total Hutang :
-                  </span>
-                  <span style={{ textAlign: "right", flex: 1 }}>
-                    Rp.{Number(totalHutangPelanggan).toLocaleString("id-ID")}
-                  </span>
+          <div className="total-section">
+            {diskon > 0 && (
+              <>
+                <div className="item-info">
+                  <span>SubTotal :</span>
+                  <span>Rp{subtotal.toLocaleString("id-ID")}</span>
                 </div>
-              )}
-            </>
-          )}
+                <div className="item-info">
+                  <span>Diskon :</span>
+                  <span>Rp.{diskon.toLocaleString("id-ID")}</span>
+                </div>
+              </>
+            )}
+
+            <div className="item-info">
+              <span>Total :</span>
+              <span>Rp.{total.toLocaleString("id-ID")}</span>
+            </div>
+            <div className="item-info">
+              <span>Bayar :</span>
+              <span>
+                {bayarNominal === 0
+                  ? "-"
+                  : `Rp.${bayarNominal.toLocaleString("id-ID")}`}
+              </span>
+            </div>
+            <div
+              className="item-info"
+              style={{ color: kembalian < 0 ? "red" : "black" }}
+            >
+              <span>{kembalian < 0 ? "Hutang :" : "Kembali :"}</span>
+              <span>{`Rp.${Math.abs(kembalian).toLocaleString("id-ID")}`}</span>
+            </div>
+
+            {newItem.nama_pelanggan && (
+              <>
+                <div className="item-info">
+                  <span>Pelanggan :</span>
+                  <span>{capitalizeWords(newItem.nama_pelanggan)}</span>
+                </div>
+                {totalHutangPelanggan !== null && (
+                  <div className="item-info">
+                    <span>Total Hutang :</span>
+                    <span>
+                      Rp.{Number(totalHutangPelanggan).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
