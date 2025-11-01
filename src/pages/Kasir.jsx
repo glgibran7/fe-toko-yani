@@ -70,8 +70,8 @@ const Kasir = () => {
       }
 
       body {
-        font-family: monospace, Arial, sans-serif;
-        font-size: 14px;
+        font-family: monospace, Poppins, sans-serif;
+        font-size: 18px;
         margin: 0;
         padding: 0;
         background: #fff;
@@ -82,7 +82,7 @@ const Kasir = () => {
         width: 58mm;
         max-width: 58mm;
         margin: 0 auto;
-        padding: 4px;
+        padding: 2px;
         box-sizing: border-box;
         word-wrap: break-word;
         overflow-wrap: break-word;
@@ -90,14 +90,14 @@ const Kasir = () => {
 
       .logo {
         display: block;
-        margin: 0 auto 4px;
+        margin: 0 auto 2px;
         max-height: 32px;
       }
 
       .struk-header {
         text-align: center;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 18px;
         margin-bottom: 2px;
       }
 
@@ -110,8 +110,8 @@ const Kasir = () => {
 
       .subheader {
         text-align: center;
-        font-size: 10px;
-        margin-bottom: 6px;
+        font-size: 9px;
+        margin-bottom: 4px;
       }
 
       table {
@@ -120,7 +120,7 @@ const Kasir = () => {
       }
 
       td {
-        font-size: 13px;
+        font-size: 15px;
         padding: 2px 0;
         vertical-align: top;
         word-break: break-word;
@@ -130,19 +130,21 @@ const Kasir = () => {
         display: flex;
         flex-direction: column;
         margin-bottom: 2px;
-        border-bottom: 1px dotted #999;
+        border-top: 1px dotted #999;
         padding-bottom: 2px;
       }
 
       .item-name {
-        font-weight: 600;
+        font-weight: 400;
         word-wrap: break-word;
+        font-size: 15px;
       }
 
       .item-info {
         display: flex;
         justify-content: space-between;
-        font-size: 12px;
+        font-size: 15px;
+        font-weight: 200;
       }
 
       .total-section {
@@ -150,15 +152,15 @@ const Kasir = () => {
         margin-top: 6px;
         padding-top: 4px;
         font-weight: bold;
-        font-size: 13px;
+        font-size: 15px;
       }
 
       .right { text-align: right; }
       .thankyou {
-        margin-top: 8px;
+        margin-top: 4px;
         text-align: center;
         font-style: italic;
-        font-size: 12px;
+        font-size: 10px;
       }
     </style>
   </head>
