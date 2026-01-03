@@ -7,6 +7,8 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+console.log("API URL:", process.env.REACT_APP_API_URL);
+
 //Interceptor request: tambahkan token
 api.interceptors.request.use(
   (config) => {

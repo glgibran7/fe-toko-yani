@@ -234,6 +234,8 @@ const Kasir = () => {
   const [produkLoading, setProdukLoading] = useState(false);
   const [produkError, setProdukError] = useState(null);
 
+  const [produkReady, setProdukReady] = useState(false);
+
   // Fetch produk saat modal daftar barang dibuka
   useEffect(() => {
     if (barangModalOpen) {
@@ -265,6 +267,23 @@ const Kasir = () => {
         .finally(() => setProdukLoading(false));
     }
   }, []); // hanya dijalankan sekali saat mount
+
+  useEffect(() => {
+    setProdukLoading(true);
+    setProdukReady(false);
+
+    api
+      .get("/stok/", { headers: getAuthHeaders() })
+      .then((res) => {
+        setProdukList(res.data.data || []);
+        setProdukReady(true); // 🔥 WAJIB
+      })
+      .catch(() => {
+        setProdukError("Gagal mengambil data produk");
+        setProdukReady(false);
+      })
+      .finally(() => setProdukLoading(false));
+  }, []);
 
   // State untuk daftar pelanggan dari API
   const [pelangganList, setPelangganList] = useState([]);
@@ -856,38 +875,64 @@ const Kasir = () => {
           </button>
           {/* Input scan barcode/QR */}
           <div className="relative">
+            {/* Icon QR */}
             <span className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
-              <IoQrCodeOutline size={20} className="text-[#FF4778]" />
+              <IoQrCodeOutline
+                size={20}
+                className={produkReady ? "text-[#FF4778]" : "text-gray-400"}
+              />
             </span>
+
             <input
               ref={scanInputRef}
               type="text"
-              placeholder="Scan/masukkan barcode..."
-              className="border border-black rounded-[10px] px-2 py-1.5 text-sm w-56 hover:border-[#FF4778] focus:outline-none focus:ring-2 focus:ring-[#FF4778] pl-8"
+              disabled={!produkReady}
+              placeholder={
+                produkReady
+                  ? "Scan / ketik barcode lalu Enter"
+                  : "Memuat data stok..."
+              }
+              className={`border rounded-[10px] px-2 py-1.5 text-sm w-56 pl-8 transition-all duration-200
+      ${
+        produkReady
+          ? "border-black bg-white hover:border-[#FF4778] focus:outline-none focus:ring-2 focus:ring-[#FF4778]"
+          : "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+      }
+    `}
               onKeyDown={(e) => {
+                if (!produkReady) return;
+
                 if (e.key === "Enter" && e.target.value.trim()) {
+                  // 1️⃣ CEK DATA STOK SUDAH SIAP
+                  if (!produkList || produkList.length === 0) {
+                    showAlert("error", "Data stok belum siap");
+                    e.target.value = "";
+                    return;
+                  }
+
                   const kode = e.target.value.trim();
+
+                  // 2️⃣ SAMAKAN TIPE BARCODE (WAJIB)
                   const found = produkList.find(
-                    (item) => item.barcode === kode
+                    (item) => String(item.barcode).trim() === kode
                   );
 
                   if (!found) {
                     showAlert("error", "Produk tidak ditemukan!");
                   } else if (Number(found.jumlah) <= 0) {
-                    showAlert(
-                      "error",
-                      "Stok produk kosong, tidak dapat ditambahkan."
-                    );
+                    showAlert("error", "Stok produk kosong");
                   } else {
                     setDataPembelian((prev) => {
                       const idx = prev.findIndex(
                         (b) => b.id_produk === found.id_produk
                       );
+
                       if (idx !== -1) {
                         return prev.map((b, i) =>
                           i === idx ? { ...b, qty: Number(b.qty) + 1 } : b
                         );
                       }
+
                       return [
                         ...prev,
                         {
@@ -905,7 +950,34 @@ const Kasir = () => {
                 }
               }}
             />
+
+            {/* Loader kecil saat stok belum siap */}
+            {!produkReady && (
+              <span className="absolute right-2 top-1/2 -translate-y-1/2">
+                <svg
+                  className="animate-spin h-4 w-4 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+              </span>
+            )}
           </div>
+
           {/* Input cari barang (share dengan modal daftar produk) */}
           <div className="relative">
             <input
@@ -1366,7 +1438,7 @@ const Kasir = () => {
                                     // Cek apakah produk sudah ada di pembelian
                                     const idx = prev.findIndex(
                                       (b) =>
-                                        b.nama_produk === item.nama_produk &&
+                                        b.id_produk === item.id_produk &&
                                         b.satuan === item.satuan
                                     );
                                     if (idx !== -1) {
