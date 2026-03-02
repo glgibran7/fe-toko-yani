@@ -61,9 +61,11 @@ function Login() {
       {/* Left side - Login Form */}
       <div className="md:w-1/2 w-full flex items-center justify-center p-8 z-10">
         <div className="w-full max-w-md bg-white p-8 rounded-[20px] shadow-lg">
-          <h2 className="text-2xl font-bold text-left text-gray-800">Login</h2>
+          <h2 className="text-2xl font-bold text-left text-gray-800">
+            Selamat datang kembali!
+          </h2>
           <div className="mb-6 text-sm">
-            <span>Login untuk menggunakan aplikasi</span>
+            <span>Silahkan login untuk melanjutkan</span>
           </div>
 
           <form onSubmit={handleSubmit}>
