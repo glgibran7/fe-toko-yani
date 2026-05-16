@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CiCirclePlus } from "react-icons/ci";
-import { IoQrCodeOutline } from "react-icons/io5";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import api from "../utils/api";
 
 const DaftarPelanggan = () => {
@@ -277,6 +276,15 @@ const DaftarPelanggan = () => {
                     <SortIcon active={sortBy === "kontak"} asc={sortAsc} />
                   </div>
                 </th>
+                <th
+                  className="px-1 py-2 cursor-pointer select-none"
+                  onClick={() => handleSort("kontak")}
+                >
+                  <div className="flex items-center">
+                    Point
+                    <SortIcon active={sortBy === "kontak"} asc={sortAsc} />
+                  </div>
+                </th>
                 {/* <th
                   className="px-1 py-2 cursor-pointer select-none"
                   onClick={() => handleSort("alamat")}
@@ -298,20 +306,30 @@ const DaftarPelanggan = () => {
                   </td>
                   <td className="px-1 py-1 capitalize">{item.id_pelanggan}</td>
                   <td className="px-1 py-1">{item.kontak || "-"}</td>
+                  <td className="px-1 py-1">{item.poin || "-"}</td>
                   {/* <td className="px-1 py-1">{item.alamat}</td> */}
                   <td className="px-1 py-1">
-                    <button
-                      className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-3 py-1 rounded-lg text-xs"
-                      onClick={() => openEditModal(item)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="ml-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-lg text-xs"
-                      onClick={() => handleDelete(item)}
-                    >
-                      Hapus
-                    </button>
+                    <td className="px-1 py-1">
+                      <div className="flex items-center gap-2">
+                        {/* Edit */}
+                        <button
+                          className="bg-[#FF4778] hover:bg-[#FF87A7] hover:scale-110 active:scale-95 shadow-sm text-white p-2 rounded-full transition-all duration-200"
+                          onClick={() => openEditModal(item)}
+                          title="Edit Pelanggan"
+                        >
+                          <Pencil size={16} />
+                        </button>
+
+                        {/* Hapus */}
+                        <button
+                          className="bg-red-600 hover:bg-red-700 hover:scale-110 active:scale-95 shadow-sm text-white p-2 rounded-full transition-all duration-200"
+                          onClick={() => handleDelete(item)}
+                          title="Hapus Pelanggan"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
                   </td>
                 </tr>
               ))}
@@ -320,9 +338,10 @@ const DaftarPelanggan = () => {
         </div>
         <div className="flex items-center justify-between mt-4">
           <button
-            className="bg-[#FF4778] p-2 rounded-[10px] text-xs text-white font-semibold hover:bg-[#FF87A7]"
+            className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-4 py-2 rounded-[10px] text-xs font-semibold flex items-center gap-2 transition-all duration-200"
             onClick={openAddModal}
           >
+            <Plus size={16} />
             Tambah Pelanggan
           </button>
         </div>

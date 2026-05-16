@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
+import { Plus, Wallet } from "lucide-react";
 
 const Hutang = () => {
   const getAuthHeaders = () => {
@@ -832,18 +833,27 @@ const Hutang = () => {
                             )}
                           </td>
                           <td className="px-1 py-1 text-center">
-                            <button
-                              className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-3 py-1 rounded-[10px] text-xs mr-2"
-                              onClick={() => openModalTambahHutang(item)}
-                            >
-                              Tambah
-                            </button>
-                            <button
-                              className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-[10px] text-xs"
-                              onClick={() => openModalBayarHutang(item)}
-                            >
-                              Bayar
-                            </button>
+                            <td className="px-1 py-1 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                {/* Tambah Hutang */}
+                                <button
+                                  className="bg-[#FF4778] hover:bg-[#FF87A7] text-white p-2 rounded-full transition-all duration-200"
+                                  onClick={() => openModalTambahHutang(item)}
+                                  title="Tambah Hutang"
+                                >
+                                  <Plus size={16} />
+                                </button>
+
+                                {/* Bayar Hutang */}
+                                <button
+                                  className="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-full transition-all duration-200"
+                                  onClick={() => openModalBayarHutang(item)}
+                                  title="Bayar Hutang"
+                                >
+                                  <Wallet size={16} />
+                                </button>
+                              </div>
+                            </td>
                           </td>
                         </tr>
                       );
@@ -855,9 +865,10 @@ const Hutang = () => {
           </div>
           <div className="flex justify-left pt-4">
             <button
-              className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-4 py-2 rounded-[10px] text-xs font-semibold"
+              className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-4 py-2 rounded-[10px] text-xs font-semibold flex items-center gap-2"
               onClick={openModalTambahHutangBaru}
             >
+              <Plus size={16} />
               Tambah Hutang
             </button>
           </div>
