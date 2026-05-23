@@ -26,7 +26,7 @@ const DaftarPelanggan = () => {
     setError(null);
     api
       .get("/pelanggan/")
-      .then((res) => setData(res.data))
+      .then((res) => setData(res.data.data))
       .catch(() => setError("Gagal mengambil data produk"))
       .finally(() => setLoading(false));
   }, []);
@@ -58,10 +58,11 @@ const DaftarPelanggan = () => {
       await api.put(`/pelanggan/${editItem.id_pelanggan}`, {
         nama_pelanggan: editItem.nama_pelanggan,
         kontak: editItem.kontak,
+        alamat: editItem.alamat,
       });
       // Refresh data dari backend
       const res = await api.get("/pelanggan/");
-      setData(res.data);
+      setData(res.data.data);
       closeModal();
       showAlert("success", "Pelanggan berhasil diedit");
     } catch (err) {
@@ -78,7 +79,7 @@ const DaftarPelanggan = () => {
   const [newItem, setNewItem] = useState({
     nama_pelanggan: "",
     kontak: "",
-    //alamat: "",
+    alamat: "",
   });
 
   // Handler untuk modal tambah
@@ -86,7 +87,7 @@ const DaftarPelanggan = () => {
     setNewItem({
       nama_pelanggan: "",
       kontak: "",
-      //alamat: "",
+      alamat: "",
     });
     setAddModalOpen(true);
   };
@@ -110,7 +111,7 @@ const DaftarPelanggan = () => {
       });
       // Refresh data dari backend
       const res = await api.get("/pelanggan/");
-      setData(res.data);
+      setData(res.data.data);
       closeAddModal();
       showAlert("success", "Pelanggan berhasil ditambahkan");
     } catch (err) {
@@ -269,6 +270,16 @@ const DaftarPelanggan = () => {
 
                 <th
                   className="px-1 py-2 cursor-pointer select-none"
+                  onClick={() => handleSort("alamat")}
+                >
+                  <div className="flex items-center">
+                    Alamat
+                    <SortIcon active={sortBy === "alamat"} asc={sortAsc} />
+                  </div>
+                </th>
+
+                <th
+                  className="px-1 py-2 cursor-pointer select-none"
                   onClick={() => handleSort("kontak")}
                 >
                   <div className="flex items-center">
@@ -278,11 +289,11 @@ const DaftarPelanggan = () => {
                 </th>
                 <th
                   className="px-1 py-2 cursor-pointer select-none"
-                  onClick={() => handleSort("kontak")}
+                  onClick={() => handleSort("point")}
                 >
                   <div className="flex items-center">
                     Point
-                    <SortIcon active={sortBy === "kontak"} asc={sortAsc} />
+                    <SortIcon active={sortBy === "point"} asc={sortAsc} />
                   </div>
                 </th>
                 {/* <th
@@ -305,6 +316,7 @@ const DaftarPelanggan = () => {
                     {item.nama_pelanggan}
                   </td>
                   <td className="px-1 py-1 capitalize">{item.id_pelanggan}</td>
+                  <td className="px-1 py-1">{item.alamat || "-"}</td>
                   <td className="px-1 py-1">{item.kontak || "-"}</td>
                   <td className="px-1 py-1">{item.poin || "-"}</td>
                   {/* <td className="px-1 py-1">{item.alamat}</td> */}
@@ -379,7 +391,7 @@ const DaftarPelanggan = () => {
                   className="border rounded px-2 py-1 w-full"
                 />
               </div>
-              {/* <div>
+              <div>
                 <label className="block text-xs">Alamat</label>
                 <input
                   type="text"
@@ -389,7 +401,7 @@ const DaftarPelanggan = () => {
                   className="border rounded px-2 py-1 w-full"
                   required
                 />
-              </div> */}
+              </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
@@ -438,6 +450,16 @@ const DaftarPelanggan = () => {
                   type="number"
                   name="kontak"
                   value={editItem.kontak}
+                  onChange={handleEditChange}
+                  className="border rounded px-2 py-1 w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-xs">Alamat</label>
+                <input
+                  type="text"
+                  name="alamat"
+                  value={editItem.alamat}
                   onChange={handleEditChange}
                   className="border rounded px-2 py-1 w-full"
                 />
