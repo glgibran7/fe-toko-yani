@@ -24,12 +24,82 @@ const Kasir = () => {
   const bayarInputRef = useRef(null);
 
   // ── Print struk ────────────────────────────────────────────────────────────
-  const handlePrintStruk = () => {
-    let printContents = strukRef.current.innerHTML;
+  // Kasir.jsx
+  const handlePrintStruk = (totalHutangFinal = s.totalHutangPelanggan) => {
+    const tanggalStr = new Date().toLocaleString("id-ID");
+    const alamatToko = "Dusun Muhajirin, Desa Nusa Jaya";
+
+    // Build item rows
+    const itemRows = s.dataPembelian
+      .map(
+        (item) => `
+    <div class="item-row">
+      <div class="item-name">${capitalizeWords(item.nama_produk)}</div>
+      <div class="item-info">
+        <span>${item.qty} x Rp.${Number(item.harga_jual).toLocaleString(
+          "id-ID"
+        )}</span>
+        <span>Rp.${(item.qty * item.harga_jual).toLocaleString("id-ID")}</span>
+      </div>
+    </div>
+  `
+      )
+      .join("");
+
+    // Build total section
+    const diskonSection =
+      s.diskon > 0
+        ? `
+    <div class="item-info"><span>SubTotal :</span><span>Rp.${s.subtotal.toLocaleString(
+      "id-ID"
+    )}</span></div>
+    <div class="item-info"><span>Diskon :</span><span>Rp.${s.diskon.toLocaleString(
+      "id-ID"
+    )}</span></div>
+  `
+        : "";
+
+    const hutangSection = s.newItem.nama_pelanggan
+      ? `
+    <div class="item-info"><span>Pelanggan :</span><span>${capitalizeWords(
+      s.newItem.nama_pelanggan
+    )}</span></div>
+    ${
+      totalHutangFinal !== null
+        ? `
+      <div class="item-info">
+        <span>Total Hutang :</span>
+        <span>Rp.${Number(totalHutangFinal).toLocaleString("id-ID")}</span>
+      </div>`
+        : ""
+    }
+  `
+      : "";
+
+    const printContents = `
+    ${itemRows}
+    <div class="total-section">
+      ${diskonSection}
+      <div class="item-info"><span>Total :</span><span>Rp.${s.total.toLocaleString(
+        "id-ID"
+      )}</span></div>
+      <div class="item-info"><span>Bayar :</span>
+        <span>${
+          s.bayarNominal === 0
+            ? "-"
+            : `Rp.${s.bayarNominal.toLocaleString("id-ID")}`
+        }</span>
+      </div>
+      <div class="item-info" style="color:${s.kembalian < 0 ? "red" : "black"}">
+        <span>${s.kembalian < 0 ? "Hutang :" : "Kembali :"}</span>
+        <span>Rp.${Math.abs(s.kembalian).toLocaleString("id-ID")}</span>
+      </div>
+      ${hutangSection}
+    </div>
+  `;
+
     const printWindow = window.open("", "", "width=300,height=600");
     const logoBase64 = "images/icon-outlook.svg";
-    const tanggalStr = new Date().toLocaleString("id-ID");
-    const alamatToko = "Dusun Muhajirin, Desa Nusa Jaya ";
 
     printWindow.document.write(`
 <html>
@@ -43,13 +113,11 @@ const Kasir = () => {
       .struk-header { text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 2px; }
       .struk-alamat { text-align: center; font-size: 10px; margin-bottom: 4px; white-space: pre-line; }
       .subheader { text-align: center; font-size: 9px; margin-bottom: 4px; }
-      table { width: 100%; border-collapse: collapse; }
       td { font-size: 15px; padding: 2px 0; vertical-align: top; word-break: break-word; }
       .item-row { display: flex; flex-direction: column; margin-bottom: 2px; border-top: 1px dotted #999; padding-bottom: 2px; }
       .item-name { font-weight: 400; word-wrap: break-word; font-size: 15px; }
       .item-info { display: flex; justify-content: space-between; font-size: 15px; font-weight: 200; }
       .total-section { border-top: 1px dashed #000; margin-top: 6px; padding-top: 4px; font-weight: bold; font-size: 15px; }
-      .right { text-align: right; }
       .thankyou { margin-top: 4px; text-align: center; font-style: italic; font-size: 10px; }
     </style>
   </head>
@@ -77,6 +145,7 @@ const Kasir = () => {
     setDiskonValue: s.setDiskonValue,
     setNewItem: s.setNewItem,
     newItem: s.newItem,
+    setTotalHutangPelanggan: s.setTotalHutangPelanggan,
     total: s.total,
     kembalian: s.kembalian,
     showAlert: s.showAlert,

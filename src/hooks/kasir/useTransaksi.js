@@ -10,6 +10,7 @@ export const useTransaksi = ({
   setDiskonValue,
   setNewItem,
   newItem,
+  setTotalHutangPelanggan,
   total,
   kembalian,
   showAlert,
@@ -57,6 +58,22 @@ export const useTransaksi = ({
     return true;
   };
 
+  const fetchTotalHutang = async (id_pelanggan) => {
+    if (!id_pelanggan) return null; // ← return null kalau tidak ada pelanggan
+    try {
+      const res = await api.get("/hutang/total", { headers: getAuthHeaders() });
+      const data = res.data?.data || [];
+      const pelanggan = data.find(
+        (p) => p.id_pelanggan === Number(id_pelanggan)
+      );
+      const total = pelanggan?.total_sisa_hutang ?? 0;
+      setTotalHutangPelanggan(total);
+      return total; // ← return nilainya
+    } catch {
+      return null;
+    }
+  };
+
   const handleSubmitTransaksi = async () => {
     if (!validate()) return;
     try {
@@ -66,9 +83,9 @@ export const useTransaksi = ({
         return;
       }
       await api.post("/transaksi/", payload, { headers: getAuthHeaders() });
+      const totalHutangFinal = await fetchTotalHutang(newItem.id_pelanggan); // ← await dan ambil nilai
       showAlert("success", "Transaksi berhasil disimpan!");
-      handlePrintStruk();
-      showAlert("success", "Struk berhasil dicetak!");
+      handlePrintStruk(totalHutangFinal); // ← pass langsung, tidak tunggu re-render
       resetForm();
     } catch (err) {
       console.error(err);
@@ -89,6 +106,7 @@ export const useTransaksi = ({
         return;
       }
       await api.post("/transaksi/", payload, { headers: getAuthHeaders() });
+      await fetchTotalHutang(newItem.id_pelanggan);
       showAlert("success", "Transaksi berhasil disimpan!");
       resetForm();
     } catch (err) {
