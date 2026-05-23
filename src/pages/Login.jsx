@@ -41,6 +41,8 @@ function Login() {
         localStorage.setItem("username", form.username);
         localStorage.setItem("nama", data.nama || form.username);
         localStorage.setItem("role", data.role || "-");
+        localStorage.setItem("id_kasir", data.id_kasir);
+        localStorage.setItem("id_lokasi", data.id_lokasi);
 
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));

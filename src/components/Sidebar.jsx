@@ -22,15 +22,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       : []),
 
     { name: "Stock", icon: <Package size={20} />, path: "/stock" },
+    {
+      name: "Pelanggan",
+      icon: <Users size={20} />,
+      path: "/pelanggan",
+    },
     { name: "Hutang", icon: <DollarSign size={20} />, path: "/hutang" },
 
     ...(role === "admin"
       ? [
-          {
-            name: "Pelanggan",
-            icon: <Users size={20} />,
-            path: "/pelanggan",
-          },
           {
             name: "Laporan",
             icon: <FileText size={20} />,
