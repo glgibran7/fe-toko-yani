@@ -247,7 +247,7 @@ function Login() {
           {/* Footer */}
           <p className="text-xs sm:text-sm text-center text-slate-400 mt-8">
             © {new Date().getFullYear()}{" "}
-            <span className="text-pink-500 font-semibold">Toko Yani</span>
+            <span className="text-pink-500 font-semibold">OutlookProject</span>
           </p>
         </div>
       </div>

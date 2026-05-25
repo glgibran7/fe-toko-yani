@@ -17,6 +17,7 @@ import Hutang from "./pages/Hutang";
 import Laporan from "./pages/Laporan";
 import Login from "./pages/Login";
 import Tentang from "./pages/Tentang";
+import LoyaltyPoin from "./pages/LoyaltyPoin";
 
 import DashboardLayout from "./layouts/DashboardLayout";
 import PublicLayout from "./layouts/PublicLayout";
@@ -26,20 +27,16 @@ function App() {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
-  // Validasi token kadaluarsa saat load pertama
   useEffect(() => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
         const now = Date.now() / 1000;
-
         if (decoded.exp < now) {
-          console.log("Token expired, force logout");
           localStorage.clear();
           window.location.replace("/login");
         }
-      } catch (err) {
-        console.log("Invalid token, force logout");
+      } catch {
         localStorage.clear();
         window.location.replace("/login");
       }
@@ -51,10 +48,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Halaman root "/" diarahkan ke login */}
         <Route path="/" element={<Navigate to="/login" />} />
 
-        {/* Login route */}
         <Route
           path="/login"
           element={
@@ -72,7 +67,6 @@ function App() {
           }
         />
 
-        {/* Protected Routes */}
         <Route
           path="/kasir"
           element={
@@ -83,7 +77,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/stock"
           element={
@@ -94,7 +87,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/pelanggan"
           element={
@@ -105,7 +97,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/hutang"
           element={
@@ -116,7 +107,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/laporan"
           element={
@@ -127,13 +117,22 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/tentang"
           element={
             <ProtectedRoute allowedRoles={["admin", "kasir"]}>
               <DashboardLayout>
                 <Tentang />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/loyalty"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "kasir"]}>
+              <DashboardLayout>
+                <LoyaltyPoin />
               </DashboardLayout>
             </ProtectedRoute>
           }

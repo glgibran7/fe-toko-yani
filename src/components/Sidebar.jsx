@@ -9,6 +9,7 @@ import {
   DollarSign,
   LogOut,
   BadgeInfo,
+  Gift,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import api from "../utils/api";
@@ -20,30 +21,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     ...(role !== "admin"
       ? [{ name: "Kasir", icon: <LayoutDashboard size={20} />, path: "/kasir" }]
       : []),
-
     { name: "Stock", icon: <Package size={20} />, path: "/stock" },
-    {
-      name: "Pelanggan",
-      icon: <Users size={20} />,
-      path: "/pelanggan",
-    },
+    { name: "Pelanggan", icon: <Users size={20} />, path: "/pelanggan" },
     { name: "Hutang", icon: <DollarSign size={20} />, path: "/hutang" },
-
     ...(role === "admin"
-      ? [
-          {
-            name: "Laporan",
-            icon: <FileText size={20} />,
-            path: "/laporan",
-          },
-        ]
+      ? [{ name: "Laporan", icon: <FileText size={20} />, path: "/laporan" }]
       : []),
-
-    {
-      name: "Tentang",
-      icon: <BadgeInfo size={20} />,
-      path: "/tentang",
-    },
+    { name: "Loyalty", icon: <Gift size={20} />, path: "/loyalty" },
+    { name: "Tentang", icon: <BadgeInfo size={20} />, path: "/tentang" },
   ];
 
   const handleLogout = async () => {
@@ -52,15 +37,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         "/auth/logout",
         {},
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-
       localStorage.clear();
       window.location.href = "/login";
-    } catch (err) {
+    } catch {
       alert("Logout gagal. Coba lagi.");
     }
   };
@@ -81,7 +63,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               <p className="text-xs opacity-70">Outlook Project</p>
             </div>
           )}
-
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 rounded-lg hover:bg-white/20 transition"
@@ -115,9 +96,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <div className="p-4">
           <button
             onClick={() => {
-              if (window.confirm("Yakin ingin logout?")) {
-                handleLogout();
-              }
+              if (window.confirm("Yakin ingin logout?")) handleLogout();
             }}
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-red-500 transition"
           >
@@ -144,13 +123,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               <span className="mt-1">{item.name}</span>
             </NavLink>
           ))}
-
-          {/* Logout Button */}
           <button
             onClick={() => {
-              if (window.confirm("Yakin ingin logout?")) {
-                handleLogout();
-              }
+              if (window.confirm("Yakin ingin logout?")) handleLogout();
             }}
             className="flex flex-col items-center text-xs text-gray-500"
           >
