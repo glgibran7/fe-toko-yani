@@ -1,130 +1,354 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   History,
   Gift,
   RefreshCcw,
   Settings,
-  ArrowDownCircle,
-  ArrowUpCircle,
   Plus,
   Pencil,
   Trash2,
   Search,
   Save,
+  Star,
+  X,
+  ChevronDown,
+  CheckCircle2,
+  AlertCircle,
+  Coins,
+  TrendingUp,
 } from "lucide-react";
 import api from "../utils/api";
 
-// ─────────────────────────────────────────────
-// ALERT HELPER
-// ─────────────────────────────────────────────
+// ─── STYLES ──────────────────────────────────
+const _style = document.createElement("style");
+_style.textContent = `
+  :root {
+    --rose:        #E8365D;
+    --rose-light:  #FF6B8A;
+    --rose-pale:   #FFF1F4;
+    --rose-border: #FDDDE4;
+    --gold:        #C9963A;
+    --gold-pale:   #FFFBF0;
+    --ink:         #1A1118;
+    --ink-soft:    #4A3D45;
+    --ink-muted:   #8A7A82;
+    --surface:     #FDFBFC;
+    --surface-2:   #F7F3F5;
+    --border:      #EDE6E9;
+    --white:       #FFFFFF;
+    --green:       #1E8A5E;
+    --green-pale:  #EDFAF4;
+    --red-pale:    #FFF0F0;
+  }
+  * { box-sizing: border-box; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-14px) scale(0.96); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes shimmer {
+    from { background-position: -600px 0; }
+    to   { background-position:  600px 0; }
+  }
+
+  .lp-fade     { animation: fadeUp 0.22s ease both; }
+  .lp-toast    { animation: toastIn 0.28s ease both; }
+  .lp-modal    { animation: modalIn 0.26s cubic-bezier(0.34,1.5,0.64,1) both; }
+
+  .lp-row      { transition: background 0.13s; }
+  .lp-row:hover{ background: var(--rose-pale) !important; }
+
+  .lp-btn:active      { transform: scale(0.97); }
+  .lp-icon-btn:active { transform: scale(0.90); }
+
+  .lp-scroll::-webkit-scrollbar       { width: 4px; height: 4px; }
+  .lp-scroll::-webkit-scrollbar-track { background: transparent; }
+  .lp-scroll::-webkit-scrollbar-thumb { background: var(--rose-border); border-radius: 99px; }
+
+  .lp-tabs-bar::-webkit-scrollbar { display: none; }
+  .lp-tabs-bar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+  }
+
+  .lp-opt { display: block; width: 100%; text-align: left; padding: 9px 14px;
+            font-size: 13px; border: none; background: transparent; cursor: pointer;
+            transition: background 0.12s, color 0.12s; color: var(--ink); }
+  .lp-opt:hover, .lp-opt.sel { background: var(--rose-pale); color: var(--rose); }
+
+  .lp-tab { display: flex; align-items: center; gap: 7px; padding: 9px 18px;
+            border: none; cursor: pointer; font-size: 13px; font-weight: 500;
+            border-bottom: 2px solid transparent; margin-bottom: -2px;
+            background: transparent; color: var(--ink-muted);
+            transition: color 0.15s, background 0.15s, border-color 0.15s;
+            border-radius: 10px 10px 0 0; white-space: nowrap; }
+  .lp-tab:hover  { color: var(--rose); background: var(--rose-pale); }
+  .lp-tab.active { color: var(--rose); background: var(--rose-pale);
+                   border-bottom-color: var(--rose); font-weight: 700; }
+
+  .lp-input {
+    width: 100%; padding: 10px 12px; font-size: 13px; color: var(--ink);
+    border: 1.5px solid var(--border); border-radius: 11px;
+    background: var(--white); outline: none; transition: border-color 0.18s, box-shadow 0.18s;
+  }
+  .lp-input:focus {
+    border-color: var(--rose);
+    box-shadow: 0 0 0 3px rgba(232,54,93,0.09);
+  }
+  .lp-input.has-prefix { padding-left: 36px; }
+  .lp-input.has-icon   { padding-left: 34px; padding-right: 32px; }
+
+  .lp-primary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 10px 20px; border: none; border-radius: 11px; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: box-shadow 0.18s, opacity 0.18s;
+    background: linear-gradient(135deg, var(--rose) 0%, #C4284E 100%);
+    color: #fff; box-shadow: 0 4px 14px rgba(232,54,93,0.28);
+  }
+  .lp-primary:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .lp-primary:not(:disabled):hover { box-shadow: 0 6px 20px rgba(232,54,93,0.40); }
+  .lp-primary.full { width: 100%; }
+`;
+document.head.appendChild(_style);
+
+// ─── TOAST ───────────────────────────────────
 const useAlert = () => {
   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
+  const t = useRef(null);
   const showAlert = (type, message) => {
+    if (t.current) clearTimeout(t.current);
     setAlert({ show: true, type, message });
-    setTimeout(() => setAlert({ show: false, type: "", message: "" }), 2500);
+    t.current = setTimeout(
+      () => setAlert({ show: false, type: "", message: "" }),
+      2800
+    );
   };
   return { alert, showAlert };
 };
 
-// ─────────────────────────────────────────────
-// REUSABLE SEARCHABLE COMBOBOX
-// ─────────────────────────────────────────────
-const SearchableCombobox = ({
+const Toast = ({ alert }) => {
+  if (!alert.show) return null;
+  const ok = alert.type === "success";
+  return (
+    <div
+      className="lp-toast"
+      style={{
+        position: "fixed",
+        top: 20,
+        left: "50%",
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        background: ok ? "#0D3D25" : "#4D0F1E",
+        color: "#fff",
+        padding: "11px 18px",
+        borderRadius: 13,
+        boxShadow: "0 8px 30px rgba(0,0,0,0.20)",
+        fontSize: 13,
+        fontWeight: 500,
+        minWidth: 220,
+      }}
+    >
+      {ok ? (
+        <CheckCircle2 size={15} style={{ color: "#52E3A0", flexShrink: 0 }} />
+      ) : (
+        <AlertCircle size={15} style={{ color: "#FF8FA0", flexShrink: 0 }} />
+      )}
+      {alert.message}
+    </div>
+  );
+};
+
+// ─── FIELD LABEL ─────────────────────────────
+const FL = ({ children }) => (
+  <div
+    style={{
+      fontSize: 11,
+      fontWeight: 700,
+      color: "var(--ink-muted)",
+      letterSpacing: "0.05em",
+      textTransform: "uppercase",
+      marginBottom: 5,
+    }}
+  >
+    {children}
+  </div>
+);
+
+// ─── POIN CHIP ───────────────────────────────
+const PoinChip = ({ nama, poin }) => (
+  <div
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 10,
+      background: "linear-gradient(135deg,var(--rose-pale),var(--gold-pale))",
+      border: "1.5px solid var(--rose-border)",
+      borderRadius: 13,
+      padding: "9px 15px",
+    }}
+  >
+    <div
+      style={{
+        width: 30,
+        height: 30,
+        borderRadius: "50%",
+        flexShrink: 0,
+        background: "linear-gradient(135deg,var(--rose),var(--rose-light))",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Coins size={14} color="white" />
+    </div>
+    <div>
+      <div style={{ fontSize: 11, color: "var(--ink-muted)", fontWeight: 500 }}>
+        {nama}
+      </div>
+      <div
+        style={{
+          fontSize: 14,
+          fontWeight: 800,
+          color: "var(--rose)",
+          lineHeight: 1.2,
+        }}
+      >
+        {poin?.toLocaleString("id-ID")} Poin
+      </div>
+    </div>
+  </div>
+);
+
+// ─── COMBOBOX ────────────────────────────────
+const Combo = ({
   options = [],
   value = "",
   onChange,
-  placeholder = "Pilih data...",
+  placeholder = "Pilih...",
   displayKey = "label",
   valueKey = "value",
-  searchKeys = [],
-  className = "",
 }) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const wrapperRef = React.useRef(null);
+  const ref = useRef(null);
 
   useEffect(() => {
-    const handler = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-        setOpen(false);
-      }
+    const h = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
-
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const selectedItem = options.find(
-    (item) => String(item[valueKey]) === String(value)
-  );
-
+  const sel = options.find((o) => String(o[valueKey]) === String(value));
   useEffect(() => {
-    if (selectedItem) {
-      setQuery(selectedItem[displayKey]);
-    } else {
-      setQuery("");
-    }
+    setQuery(sel ? sel[displayKey] : "");
   }, [value]);
 
-  const filteredOptions = options.filter((item) => {
-    const searchTarget = [item[displayKey], ...searchKeys.map((k) => item[k])]
-      .join(" ")
-      .toLowerCase();
-
-    return searchTarget.includes(query.toLowerCase());
-  });
+  const filtered = options.filter((o) =>
+    String(o[displayKey]).toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
-    <div ref={wrapperRef} className={`relative ${className}`}>
-      <div className="relative">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
-
-        <input
-          type="text"
-          value={query}
-          placeholder={placeholder}
-          onFocus={() => setOpen(true)}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-
-            if (!e.target.value) {
-              onChange("");
-            }
-          }}
-          className="border border-gray-300 rounded-[10px] pl-9 pr-3 py-2 text-sm w-full focus:ring-[#FF4778] focus:border-[#FF4778] outline-none"
-          autoComplete="off"
-        />
-      </div>
-
+    <div ref={ref} style={{ position: "relative" }}>
+      <Search
+        size={13}
+        style={{
+          position: "absolute",
+          left: 11,
+          top: "50%",
+          transform: "translateY(-50%)",
+          color: "var(--ink-muted)",
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      />
+      <ChevronDown
+        size={13}
+        style={{
+          position: "absolute",
+          right: 11,
+          top: "50%",
+          transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)`,
+          color: "var(--ink-muted)",
+          pointerEvents: "none",
+          transition: "transform 0.2s",
+          zIndex: 1,
+        }}
+      />
+      <input
+        className={`lp-input has-icon${open ? " " : ""}`}
+        style={{
+          borderColor: open ? "var(--rose)" : undefined,
+          boxShadow: open ? "0 0 0 3px rgba(232,54,93,0.09)" : undefined,
+        }}
+        type="text"
+        value={query}
+        placeholder={placeholder}
+        autoComplete="off"
+        onFocus={() => setOpen(true)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+          if (!e.target.value) onChange("");
+        }}
+      />
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-          {filteredOptions.length === 0 ? (
-            <div className="px-3 py-2 text-sm text-gray-400">
-              Data tidak ditemukan.
+        <div
+          className="lp-scroll"
+          style={{
+            position: "absolute",
+            zIndex: 50,
+            top: "calc(100% + 4px)",
+            left: 0,
+            right: 0,
+            background: "var(--white)",
+            border: "1.5px solid var(--border)",
+            borderRadius: 12,
+            boxShadow: "0 10px 36px rgba(26,17,24,0.10)",
+            maxHeight: 220,
+            overflowY: "auto",
+          }}
+        >
+          {filtered.length === 0 ? (
+            <div
+              style={{
+                padding: "11px 14px",
+                fontSize: 12,
+                color: "var(--ink-muted)",
+                textAlign: "center",
+              }}
+            >
+              Tidak ditemukan.
             </div>
           ) : (
-            filteredOptions.map((item) => (
+            filtered.map((o) => (
               <button
-                key={item[valueKey]}
-                type="button"
+                key={o[valueKey]}
+                className={`lp-opt${
+                  String(o[valueKey]) === String(value) ? " sel" : ""
+                }`}
                 onClick={() => {
-                  onChange(item[valueKey]);
-                  setQuery(item[displayKey]);
+                  onChange(o[valueKey]);
+                  setQuery(o[displayKey]);
                   setOpen(false);
                 }}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-[#FFF0F4] hover:text-[#FF4778] transition-colors
-                  ${
-                    String(item[valueKey]) === String(value)
-                      ? "bg-[#FFF0F4] text-[#FF4778]"
-                      : ""
-                  }
-                `}
               >
-                {item[displayKey]}
+                {o[displayKey]}
               </button>
             ))
           )}
@@ -134,9 +358,443 @@ const SearchableCombobox = ({
   );
 };
 
-// ─────────────────────────────────────────────
+// ─── PRODUCT SEARCH ──────────────────────────
+const ProdukSearch = ({ value, onChange }) => {
+  const [query, setQuery] = useState(value?.nama_produk || "");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const h = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  useEffect(() => {
+    setQuery(value?.nama_produk || "");
+  }, [value?.nama_produk]);
+
+  const search = async (q) => {
+    setQuery(q);
+    onChange({ id_produk: "", nama_produk: q });
+    if (!q.trim()) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+    setLoading(true);
+    setOpen(true);
+    try {
+      const r = await api.get(`/produk/?search=${encodeURIComponent(q)}`);
+      setResults(r.data.data || []);
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <Search
+        size={13}
+        style={{
+          position: "absolute",
+          left: 11,
+          top: "50%",
+          transform: "translateY(-50%)",
+          color: "var(--ink-muted)",
+          pointerEvents: "none",
+        }}
+      />
+      <input
+        className="lp-input has-icon"
+        style={{
+          borderColor: open ? "var(--rose)" : undefined,
+          boxShadow: open ? "0 0 0 3px rgba(232,54,93,0.09)" : undefined,
+          paddingRight: 12,
+        }}
+        type="text"
+        value={query}
+        placeholder="Ketik nama produk..."
+        autoComplete="off"
+        onChange={(e) => search(e.target.value)}
+        onFocus={() => {
+          if (results.length > 0) setOpen(true);
+        }}
+      />
+      {loading && (
+        <span
+          style={{
+            position: "absolute",
+            right: 11,
+            top: "50%",
+            transform: "translateY(-50%)",
+            fontSize: 11,
+            color: "var(--ink-muted)",
+          }}
+        >
+          ...
+        </span>
+      )}
+      {open && (
+        <div
+          className="lp-scroll"
+          style={{
+            position: "absolute",
+            zIndex: 50,
+            top: "calc(100% + 4px)",
+            left: 0,
+            right: 0,
+            background: "var(--white)",
+            border: "1.5px solid var(--border)",
+            borderRadius: 12,
+            boxShadow: "0 10px 36px rgba(26,17,24,0.10)",
+            maxHeight: 200,
+            overflowY: "auto",
+          }}
+        >
+          {results.length === 0 ? (
+            <div
+              style={{
+                padding: "11px 14px",
+                fontSize: 12,
+                color: "var(--ink-muted)",
+                textAlign: "center",
+              }}
+            >
+              Tidak ditemukan.
+            </div>
+          ) : (
+            results.map((p) => (
+              <button
+                key={p.id_produk}
+                className="lp-opt"
+                onClick={() => {
+                  onChange({
+                    id_produk: p.id_produk,
+                    nama_produk: p.nama_produk,
+                  });
+                  setQuery(p.nama_produk);
+                  setOpen(false);
+                }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span>{p.nama_produk}</span>
+                <span style={{ fontSize: 11, color: "var(--ink-muted)" }}>
+                  #{p.id_produk}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+      {value?.id_produk && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            marginTop: 5,
+            fontSize: 11,
+          }}
+        >
+          <CheckCircle2 size={12} style={{ color: "var(--green)" }} />
+          <span style={{ color: "var(--green)", fontWeight: 600 }}>
+            {value.nama_produk}
+          </span>
+          <span style={{ color: "var(--ink-muted)" }}>
+            · ID {value.id_produk}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── MODAL ───────────────────────────────────
+const Modal = ({ title, onClose, children }) => (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 9998,
+      background: "rgba(26,17,24,0.42)",
+      backdropFilter: "blur(5px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16,
+    }}
+  >
+    <div
+      className="lp-modal"
+      style={{
+        background: "var(--white)",
+        borderRadius: 18,
+        padding: "26px 26px 22px",
+        width: "100%",
+        maxWidth: 420,
+        boxShadow: "0 24px 70px rgba(26,17,24,0.18)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 20,
+        }}
+      >
+        <h3
+          style={{
+            fontSize: 17,
+            fontWeight: 700,
+            color: "var(--ink)",
+            margin: 0,
+          }}
+        >
+          {title}
+        </h3>
+        <button
+          onClick={onClose}
+          style={{
+            width: 30,
+            height: 30,
+            border: "none",
+            borderRadius: "50%",
+            cursor: "pointer",
+            background: "var(--surface-2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "background 0.15s",
+          }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.background = "var(--rose-pale)")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.background = "var(--surface-2)")
+          }
+        >
+          <X size={14} color="var(--ink-soft)" />
+        </button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
+// ─── MODAL FOOTER ────────────────────────────
+const MFooter = ({ onCancel, submitting, label = "Simpan" }) => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: 8,
+      paddingTop: 6,
+    }}
+  >
+    <button
+      type="button"
+      onClick={onCancel}
+      style={{
+        padding: "9px 18px",
+        borderRadius: 10,
+        border: "1.5px solid var(--border)",
+        background: "transparent",
+        fontSize: 13,
+        fontWeight: 500,
+        cursor: "pointer",
+        color: "var(--ink-soft)",
+        transition: "background 0.15s",
+      }}
+      onMouseOver={(e) =>
+        (e.currentTarget.style.background = "var(--surface-2)")
+      }
+      onMouseOut={(e) => (e.currentTarget.style.background = "transparent")}
+    >
+      Batal
+    </button>
+    <button type="submit" className="lp-btn lp-primary" disabled={submitting}>
+      <Save size={13} /> {submitting ? "Menyimpan..." : label}
+    </button>
+  </div>
+);
+
+// ─── EMPTY STATE ─────────────────────────────
+const Empty = ({ colSpan, icon: Icon, msg }) => (
+  <tr>
+    <td colSpan={colSpan} style={{ textAlign: "center", padding: "44px 20px" }}>
+      <div
+        style={{
+          display: "inline-flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            background: "var(--surface-2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {Icon && <Icon size={20} color="var(--border)" />}
+        </div>
+        <span style={{ fontSize: 13, color: "var(--ink-muted)" }}>{msg}</span>
+      </div>
+    </td>
+  </tr>
+);
+
+// ─── SKELETON ROWS ───────────────────────────
+const Skeletons = ({ cols, rows = 4 }) =>
+  Array.from({ length: rows }).map((_, i) => (
+    <tr key={i}>
+      {cols.map((w, j) => (
+        <td key={j} style={{ padding: "13px 14px" }}>
+          <div className="skeleton" style={{ height: 11, width: w }} />
+        </td>
+      ))}
+    </tr>
+  ));
+
+// ─── TABLE STYLES ────────────────────────────
+const TH = ({ children, center }) => (
+  <th
+    style={{
+      padding: "10px 14px",
+      background: "var(--surface-2)",
+      fontSize: 10,
+      fontWeight: 700,
+      color: "var(--ink-muted)",
+      textTransform: "uppercase",
+      letterSpacing: "0.06em",
+      textAlign: center ? "center" : "left",
+      borderBottom: "1.5px solid var(--border)",
+      position: "sticky",
+      top: 0,
+      whiteSpace: "nowrap",
+    }}
+  >
+    {children}
+  </th>
+);
+
+const TD = ({ children, center, bold, muted, style: s }) => (
+  <td
+    style={{
+      padding: "11px 14px",
+      borderBottom: "1px solid var(--border)",
+      textAlign: center ? "center" : "left",
+      fontWeight: bold ? 600 : 400,
+      color: muted ? "var(--ink-muted)" : "var(--ink)",
+      fontSize: 13,
+      whiteSpace: "nowrap",
+      ...s,
+    }}
+  >
+    {children}
+  </td>
+);
+
+// ─── BADGE ───────────────────────────────────
+const Badge = ({ children, color = "rose" }) => {
+  const map = {
+    rose: {
+      bg: "linear-gradient(135deg,var(--rose-pale),var(--gold-pale))",
+      border: "var(--rose-border)",
+      text: "var(--rose)",
+    },
+    green: { bg: "var(--green-pale)", border: "#A7F3D0", text: "var(--green)" },
+    red: { bg: "var(--red-pale)", border: "#FECDD3", text: "#C0293E" },
+  };
+  const c = map[color] || map.rose;
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        background: c.bg,
+        border: `1px solid ${c.border}`,
+        color: c.text,
+        fontWeight: 700,
+        fontSize: 11,
+        padding: "3px 10px",
+        borderRadius: 99,
+      }}
+    >
+      {children}
+    </span>
+  );
+};
+
+// ─── ICON BUTTON ─────────────────────────────
+const IconBtn = ({ onClick, icon: Icon, color = "rose" }) => {
+  const map = {
+    rose: {
+      idle: "var(--rose-pale)",
+      idleC: "var(--rose)",
+      hover: "var(--rose)",
+      hoverC: "#fff",
+    },
+    red: {
+      idle: "var(--red-pale)",
+      idleC: "#C0293E",
+      hover: "#C0293E",
+      hoverC: "#fff",
+    },
+  };
+  const c = map[color];
+  return (
+    <button
+      className="lp-icon-btn"
+      onClick={onClick}
+      style={{
+        width: 31,
+        height: 31,
+        borderRadius: "50%",
+        border: "none",
+        cursor: "pointer",
+        background: c.idle,
+        color: c.idleC,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.18s",
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.background = c.hover;
+        e.currentTarget.style.color = c.hoverC;
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.background = c.idle;
+        e.currentTarget.style.color = c.idleC;
+      }}
+    >
+      <Icon size={13} />
+    </button>
+  );
+};
+
+// ═══════════════════════════════════════════
 // TAB: HISTORI POIN
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
 const TabHistori = () => {
   const [pelangganList, setPelangganList] = useState([]);
   const [selectedId, setSelectedId] = useState("");
@@ -148,7 +806,7 @@ const TabHistori = () => {
   useEffect(() => {
     api
       .get("/pelanggan/")
-      .then((res) => setPelangganList(res.data.data))
+      .then((r) => setPelangganList(r.data.data))
       .catch(() => {});
   }, []);
 
@@ -175,17 +833,23 @@ const TabHistori = () => {
   );
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="flex-1">
-          <label className="block text-xs font-semibold text-gray-600 mb-1">
-            Pilih Pelanggan
-          </label>
-          <SearchableCombobox
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Controls row */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-end",
+          gap: 10,
+        }}
+      >
+        <div style={{ flex: "1 1 200px" }}>
+          <FL>Pelanggan</FL>
+          <Combo
             value={selectedId}
-            onChange={(val) => {
-              setSelectedId(val);
-              fetchHistori(val);
+            onChange={(v) => {
+              setSelectedId(v);
+              fetchHistori(v);
             }}
             options={pelangganList.map((p) => ({
               value: p.id_pelanggan,
@@ -195,101 +859,103 @@ const TabHistori = () => {
           />
         </div>
         {pelangganInfo && (
-          <div className="flex items-center gap-2 bg-[#FFF0F4] border border-[#FF4778] rounded-[12px] px-4 py-2 text-sm whitespace-nowrap">
-            <span className="font-semibold text-gray-700">
-              {pelangganInfo.nama_pelanggan}
-            </span>
-            <span className="text-gray-400">|</span>
-            <span className="text-[#FF4778] font-bold">
-              {pelangganInfo.poin} Poin
-            </span>
+          <PoinChip
+            nama={pelangganInfo.nama_pelanggan}
+            poin={pelangganInfo.poin}
+          />
+        )}
+        {selectedId && (
+          <div style={{ flex: "0 0 200px", position: "relative" }}>
+            <Search
+              size={12}
+              style={{
+                position: "absolute",
+                left: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--ink-muted)",
+                pointerEvents: "none",
+              }}
+            />
+            <input
+              className="lp-input"
+              style={{ paddingLeft: 30, fontSize: 12 }}
+              type="search"
+              placeholder="Cari deskripsi..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         )}
       </div>
 
-      {selectedId && (
-        <div className="relative w-56">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="search"
-            className="block w-full p-2 pl-8 text-sm border border-gray-300 rounded-[15px] bg-gray-50 focus:ring-[#FF4778] focus:border-[#FF4778] outline-none"
-            placeholder="Cari deskripsi..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      )}
-
+      {/* Table */}
       <div
-        className="relative overflow-x-auto shadow-md sm:rounded-lg"
-        style={{ maxHeight: "300px", overflowY: "auto" }}
+        className="lp-scroll"
+        style={{
+          overflowX: "auto",
+          overflowY: "auto",
+          maxHeight: 340,
+          borderRadius: 14,
+          border: "1.5px solid var(--border)",
+        }}
       >
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
             <tr>
-              <th className="px-2 py-2 text-center">No</th>
-              <th className="px-2 py-2">Tipe</th>
-              <th className="px-2 py-2">Poin</th>
-              <th className="px-2 py-2">Deskripsi</th>
-              <th className="px-2 py-2">Waktu</th>
+              <TH center>No</TH>
+              <TH>Tipe</TH>
+              <TH>Poin</TH>
+              <TH>Deskripsi</TH>
+              <TH>Waktu</TH>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={5} className="text-center py-6 text-gray-400">
-                  Memuat...
-                </td>
-              </tr>
+              <Skeletons cols={[30, 70, 50, 160, 110]} />
             ) : !selectedId ? (
-              <tr>
-                <td colSpan={5} className="text-center py-8 text-gray-300">
-                  Pilih pelanggan untuk melihat histori.
-                </td>
-              </tr>
+              <Empty
+                colSpan={5}
+                icon={History}
+                msg="Pilih pelanggan untuk melihat histori poin."
+              />
             ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-8 text-gray-300">
-                  Tidak ada histori.
-                </td>
-              </tr>
+              <Empty
+                colSpan={5}
+                icon={History}
+                msg="Tidak ada histori ditemukan."
+              />
             ) : (
               filtered.map((item, idx) => (
-                <tr key={idx} className="bg-white border-b hover:bg-gray-50">
-                  <td className="px-2 py-2 text-center">{idx + 1}</td>
-                  <td className="px-2 py-2">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        item.tipe === "earn"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {item.tipe === "earn" ? (
-                        <ArrowDownCircle size={12} />
-                      ) : (
-                        <ArrowUpCircle size={12} />
-                      )}
+                <tr
+                  key={idx}
+                  className="lp-row"
+                  style={{ background: "var(--white)" }}
+                >
+                  <TD center muted>
+                    {idx + 1}
+                  </TD>
+                  <TD>
+                    <Badge color={item.tipe === "earn" ? "green" : "red"}>
                       {item.tipe}
-                    </span>
-                  </td>
-                  <td
-                    className={`px-2 py-2 font-bold ${
-                      item.tipe === "earn" ? "text-green-600" : "text-red-500"
-                    }`}
+                    </Badge>
+                  </TD>
+                  <TD
+                    bold
+                    style={{
+                      color:
+                        item.tipe === "earn" ? "var(--green)" : "var(--rose)",
+                    }}
                   >
                     {item.tipe === "earn" ? "+" : ""}
                     {item.poin}
-                  </td>
-                  <td className="px-2 py-2">{item.deskripsi || "-"}</td>
-                  <td className="px-2 py-2 text-gray-400 text-xs">
+                  </TD>
+                  <TD>{item.deskripsi || "—"}</TD>
+                  <TD muted style={{ fontSize: 12 }}>
                     {item.created_at
                       ? new Date(item.created_at).toLocaleString("id-ID")
-                      : "-"}
-                  </td>
+                      : "—"}
+                  </TD>
                 </tr>
               ))
             )}
@@ -300,156 +966,39 @@ const TabHistori = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// PRODUCT SEARCH COMBOBOX
-// ─────────────────────────────────────────────
-const ProductSearchInput = ({ value, onChange }) => {
-  // value = { id_produk, nama_produk }
-  const [query, setQuery] = useState(value?.nama_produk || "");
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const wrapperRef = React.useRef(null);
-
-  // Tutup dropdown saat klik luar
-  useEffect(() => {
-    const handler = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  // Sync jika value berubah dari luar (mis. reset)
-  useEffect(() => {
-    setQuery(value?.nama_produk || "");
-  }, [value?.nama_produk]);
-
-  const handleSearch = async (q) => {
-    setQuery(q);
-    onChange({ id_produk: "", nama_produk: q }); // reset pilihan
-    if (q.trim().length < 1) {
-      setResults([]);
-      setOpen(false);
-      return;
-    }
-    setLoading(true);
-    setOpen(true);
-    try {
-      const res = await api.get(`/produk/?search=${encodeURIComponent(q)}`);
-      setResults(res.data.data || []);
-    } catch {
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSelect = (produk) => {
-    setQuery(produk.nama_produk);
-    onChange({ id_produk: produk.id_produk, nama_produk: produk.nama_produk });
-    setOpen(false);
-    setResults([]);
-  };
-
-  return (
-    <div ref={wrapperRef} className="relative">
-      <div className="relative">
-        <Search
-          size={14}
-          className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-        />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => handleSearch(e.target.value)}
-          onFocus={() => {
-            if (results.length > 0) setOpen(true);
-          }}
-          placeholder="Ketik nama produk..."
-          className="border rounded pl-7 pr-2 py-1 w-full text-sm focus:ring-[#FF4778] focus:border-[#FF4778] outline-none"
-          autoComplete="off"
-        />
-        {loading && (
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-            ...
-          </span>
-        )}
-      </div>
-
-      {/* Dropdown hasil */}
-      {open && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-          {results.length === 0 ? (
-            <p className="text-xs text-gray-400 px-3 py-2">
-              Produk tidak ditemukan.
-            </p>
-          ) : (
-            results.map((p) => (
-              <button
-                key={p.id_produk}
-                type="button"
-                onClick={() => handleSelect(p)}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-[#FFF0F4] hover:text-[#FF4778] transition-colors flex items-center justify-between"
-              >
-                <span>{p.nama_produk}</span>
-                <span className="text-xs text-gray-400">#{p.id_produk}</span>
-              </button>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Badge produk terpilih */}
-      {value?.id_produk && (
-        <p className="text-xs text-green-600 mt-1">
-          ✓ {value.nama_produk}{" "}
-          <span className="text-gray-400">(ID: {value.id_produk})</span>
-        </p>
-      )}
-    </div>
-  );
-};
-
-// ─────────────────────────────────────────────
-// TAB: REWARD POIN
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+// TAB: REWARD
+// ═══════════════════════════════════════════
 const TabReward = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { alert, showAlert } = useAlert();
-  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-
-  // newItem menyimpan { id_produk, nama_produk, poin_required }
   const [newItem, setNewItem] = useState({
     id_produk: "",
     nama_produk: "",
     poin_required: "",
   });
+  const { alert, showAlert } = useAlert();
 
-  const fetchData = async () => {
+  const load = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/reward-poin/");
-      setData(res.data.data);
+      const r = await api.get("/reward-poin/");
+      setData(r.data.data);
     } catch {
       showAlert("error", "Gagal mengambil data reward.");
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    fetchData();
+    load();
   }, []);
 
-  const handleAddSubmit = async (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;
     if (!newItem.id_produk) {
       showAlert("error", "Pilih produk terlebih dahulu.");
       return;
@@ -460,8 +1009,8 @@ const TabReward = () => {
         id_produk: Number(newItem.id_produk),
         poin_required: Number(newItem.poin_required),
       });
-      await fetchData();
-      setAddModalOpen(false);
+      await load();
+      setAddOpen(false);
       setNewItem({ id_produk: "", nama_produk: "", poin_required: "" });
       showAlert("success", "Reward berhasil ditambahkan.");
     } catch {
@@ -471,9 +1020,8 @@ const TabReward = () => {
     }
   };
 
-  const handleEditSubmit = async (e) => {
+  const handleEdit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;
     if (!editItem.id_produk) {
       showAlert("error", "Pilih produk terlebih dahulu.");
       return;
@@ -484,7 +1032,7 @@ const TabReward = () => {
         id_produk: Number(editItem.id_produk),
         poin_required: Number(editItem.poin_required),
       });
-      await fetchData();
+      await load();
       setEditItem(null);
       showAlert("success", "Reward berhasil diubah.");
     } catch {
@@ -498,7 +1046,7 @@ const TabReward = () => {
     if (!window.confirm(`Hapus reward "${item.nama_produk}"?`)) return;
     try {
       await api.delete(`/reward-poin/${item.id_reward}`);
-      await fetchData();
+      await load();
       showAlert("success", "Reward berhasil dihapus.");
     } catch {
       showAlert("error", "Gagal menghapus reward.");
@@ -506,74 +1054,63 @@ const TabReward = () => {
   };
 
   return (
-    <div className="space-y-3">
-      {alert.show && (
-        <div
-          className={`px-4 py-2 rounded-lg text-white text-sm font-semibold ${
-            alert.type === "success" ? "bg-green-600" : "bg-red-600"
-          }`}
-        >
-          {alert.message}
-        </div>
-      )}
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <Toast alert={alert} />
 
       <div
-        className="relative overflow-x-auto shadow-md sm:rounded-lg"
-        style={{ maxHeight: "300px", overflowY: "auto" }}
+        className="lp-scroll"
+        style={{
+          overflowX: "auto",
+          overflowY: "auto",
+          maxHeight: 340,
+          borderRadius: 14,
+          border: "1.5px solid var(--border)",
+        }}
       >
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
             <tr>
-              <th className="px-2 py-2 text-center">No</th>
-              <th className="px-2 py-2">Nama Produk</th>
-              <th className="px-2 py-2">Poin</th>
-              <th className="px-2 py-2">Action</th>
+              <TH center>No</TH>
+              <TH>Nama Produk</TH>
+              <TH>Poin</TH>
+              <TH>Aksi</TH>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={4} className="text-center py-6 text-gray-400">
-                  Memuat...
-                </td>
-              </tr>
+              <Skeletons cols={[30, 200, 80, 70]} />
             ) : data.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="text-center py-8 text-gray-300">
-                  Belum ada reward.
-                </td>
-              </tr>
+              <Empty colSpan={4} icon={Gift} msg="Belum ada reward." />
             ) : (
               data.map((item, idx) => (
                 <tr
                   key={item.id_reward}
-                  className="bg-white border-b hover:bg-gray-50"
+                  className="lp-row"
+                  style={{ background: "var(--white)" }}
                 >
-                  <td className="px-2 py-2 text-center">{idx + 1}</td>
-                  <td className="px-2 py-2 font-medium text-gray-800">
-                    {item.nama_produk}
-                  </td>
-                  <td className="px-2 py-2">
-                    <span className="bg-[#FFF0F4] text-[#FF4778] font-bold px-3 py-0.5 rounded-full text-xs">
-                      {item.poin_required} poin
-                    </span>
-                  </td>
-                  <td className="px-2 py-2">
-                    <div className="flex gap-2">
-                      <button
+                  <TD center muted>
+                    {idx + 1}
+                  </TD>
+                  <TD bold>{item.nama_produk}</TD>
+                  <TD>
+                    <Badge>
+                      <Star size={9} /> {item.poin_required} poin
+                    </Badge>
+                  </TD>
+                  <TD>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <IconBtn
+                        icon={Pencil}
+                        color="rose"
                         onClick={() => setEditItem({ ...item })}
-                        className="bg-[#FF4778] hover:bg-[#FF87A7] text-white p-2 rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
+                      />
+                      <IconBtn
+                        icon={Trash2}
+                        color="red"
                         onClick={() => handleDelete(item)}
-                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      />
                     </div>
-                  </td>
+                  </TD>
                 </tr>
               ))
             )}
@@ -581,134 +1118,103 @@ const TabReward = () => {
         </table>
       </div>
 
-      <button
-        onClick={() => {
-          setNewItem({ id_produk: "", nama_produk: "", poin_required: "" });
-          setAddModalOpen(true);
-        }}
-        className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-4 py-2 rounded-[10px] text-xs font-semibold flex items-center gap-2 transition-all duration-200"
-      >
-        <Plus size={16} /> Tambah Reward
-      </button>
+      <div>
+        <button
+          className="lp-btn lp-primary"
+          onClick={() => {
+            setNewItem({ id_produk: "", nama_produk: "", poin_required: "" });
+            setAddOpen(true);
+          }}
+        >
+          <Plus size={14} /> Tambah Reward
+        </button>
+      </div>
 
-      {/* Modal Tambah */}
-      {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h2 className="text-lg font-bold mb-4">Tambah Reward Poin</h2>
-            <form onSubmit={handleAddSubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold mb-1">
-                  Produk
-                </label>
-                <ProductSearchInput
-                  value={{
-                    id_produk: newItem.id_produk,
-                    nama_produk: newItem.nama_produk,
-                  }}
-                  onChange={(val) =>
-                    setNewItem((prev) => ({ ...prev, ...val }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-xs mb-1">Poin Dibutuhkan</label>
-                <input
-                  type="number"
-                  value={newItem.poin_required}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, poin_required: e.target.value })
-                  }
-                  className="border rounded px-2 py-1 w-full text-sm"
-                  required
-                  min={1}
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setAddModalOpen(false)}
-                  className="text-sm px-4 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-1 text-sm rounded-lg bg-[#FF4778] hover:bg-[#FF87A7] text-white"
-                >
-                  Simpan
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {addOpen && (
+        <Modal title="Tambah Reward Poin" onClose={() => setAddOpen(false)}>
+          <form
+            onSubmit={handleAdd}
+            style={{ display: "flex", flexDirection: "column", gap: 14 }}
+          >
+            <div>
+              <FL>Produk</FL>
+              <ProdukSearch
+                value={{
+                  id_produk: newItem.id_produk,
+                  nama_produk: newItem.nama_produk,
+                }}
+                onChange={(v) => setNewItem((p) => ({ ...p, ...v }))}
+              />
+            </div>
+            <div>
+              <FL>Poin Dibutuhkan</FL>
+              <input
+                className="lp-input"
+                type="number"
+                min={1}
+                required
+                placeholder="contoh: 500"
+                value={newItem.poin_required}
+                onChange={(e) =>
+                  setNewItem({ ...newItem, poin_required: e.target.value })
+                }
+              />
+            </div>
+            <MFooter
+              onCancel={() => setAddOpen(false)}
+              submitting={isSubmitting}
+            />
+          </form>
+        </Modal>
       )}
 
-      {/* Modal Edit */}
       {editItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h2 className="text-lg font-bold mb-4">Edit Reward Poin</h2>
-            <form onSubmit={handleEditSubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold mb-1">
-                  Produk
-                </label>
-                <ProductSearchInput
-                  value={{
-                    id_produk: editItem.id_produk,
-                    nama_produk: editItem.nama_produk,
-                  }}
-                  onChange={(val) =>
-                    setEditItem((prev) => ({ ...prev, ...val }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-xs mb-1">Poin Dibutuhkan</label>
-                <input
-                  type="number"
-                  value={editItem.poin_required}
-                  onChange={(e) =>
-                    setEditItem({ ...editItem, poin_required: e.target.value })
-                  }
-                  className="border rounded px-2 py-1 w-full text-sm"
-                  required
-                  min={1}
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditItem(null)}
-                  className="text-sm px-4 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-1 text-sm rounded-lg bg-[#FF4778] hover:bg-[#FF87A7] text-white"
-                >
-                  Simpan
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Modal title="Edit Reward Poin" onClose={() => setEditItem(null)}>
+          <form
+            onSubmit={handleEdit}
+            style={{ display: "flex", flexDirection: "column", gap: 14 }}
+          >
+            <div>
+              <FL>Produk</FL>
+              <ProdukSearch
+                value={{
+                  id_produk: editItem.id_produk,
+                  nama_produk: editItem.nama_produk,
+                }}
+                onChange={(v) => setEditItem((p) => ({ ...p, ...v }))}
+              />
+            </div>
+            <div>
+              <FL>Poin Dibutuhkan</FL>
+              <input
+                className="lp-input"
+                type="number"
+                min={1}
+                required
+                value={editItem.poin_required}
+                onChange={(e) =>
+                  setEditItem({ ...editItem, poin_required: e.target.value })
+                }
+              />
+            </div>
+            <MFooter
+              onCancel={() => setEditItem(null)}
+              submitting={isSubmitting}
+            />
+          </form>
+        </Modal>
       )}
     </div>
   );
 };
 
-// ─────────────────────────────────────────────
-// TAB: REDEEM POIN
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+// TAB: REDEEM
+// ═══════════════════════════════════════════
 const TabRedeem = () => {
   const [pelangganList, setPelangganList] = useState([]);
   const [rewardList, setRewardList] = useState([]);
-  const [selectedPelanggan, setSelectedPelanggan] = useState("");
+  const [selectedPel, setSelectedPel] = useState("");
   const [pelangganInfo, setPelangganInfo] = useState(null);
   const [selectedReward, setSelectedReward] = useState("");
   const [qty, setQty] = useState(1);
@@ -725,31 +1231,29 @@ const TabRedeem = () => {
       .catch(() => {});
   }, []);
 
-  const handlePelangganChange = async (e) => {
-    const id = e.target.value;
-    setSelectedPelanggan(id);
+  const handlePelChange = async (id) => {
+    setSelectedPel(id);
     setResult(null);
     if (!id) {
       setPelangganInfo(null);
       return;
     }
     try {
-      const res = await api.get(`/pelanggan/${id}/poin`);
-      setPelangganInfo(res.data.data);
+      const r = await api.get(`/pelanggan/${id}/poin`);
+      setPelangganInfo(r.data.data);
     } catch {
       setPelangganInfo(null);
     }
   };
 
-  const selectedRewardData = rewardList.find(
+  const selRewardData = rewardList.find(
     (r) => String(r.id_reward) === String(selectedReward)
   );
-  const totalPoin = selectedRewardData
-    ? selectedRewardData.poin_required * qty
-    : 0;
+  const totalPoin = selRewardData ? selRewardData.poin_required * qty : 0;
+  const cukup = pelangganInfo ? pelangganInfo.poin >= totalPoin : true;
 
   const handleRedeem = async () => {
-    if (!selectedPelanggan || !selectedReward || qty < 1) {
+    if (!selectedPel || !selectedReward || qty < 1) {
       showAlert("error", "Lengkapi semua field.");
       return;
     }
@@ -757,14 +1261,12 @@ const TabRedeem = () => {
     setIsSubmitting(true);
     setResult(null);
     try {
-      const res = await api.post(
-        `/pelanggan/${selectedPelanggan}/redeem-poin`,
-        { id_reward: Number(selectedReward), qty: Number(qty) }
-      );
-      setResult(res.data.data);
-      setPelangganInfo((prev) =>
-        prev ? { ...prev, poin: res.data.data.sisa_poin } : prev
-      );
+      const r = await api.post(`/pelanggan/${selectedPel}/redeem-poin`, {
+        id_reward: Number(selectedReward),
+        qty: Number(qty),
+      });
+      setResult(r.data.data);
+      setPelangganInfo((p) => (p ? { ...p, poin: r.data.data.sisa_poin } : p));
       showAlert("success", "Redeem berhasil!");
     } catch (err) {
       showAlert(
@@ -777,28 +1279,21 @@ const TabRedeem = () => {
   };
 
   return (
-    <div className="space-y-3 max-w-lg">
-      {alert.show && (
-        <div
-          className={`px-4 py-2 rounded-lg text-white text-sm font-semibold ${
-            alert.type === "success" ? "bg-green-600" : "bg-red-600"
-          }`}
-        >
-          {alert.message}
-        </div>
-      )}
+    <div
+      style={{
+        maxWidth: 460,
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+      }}
+    >
+      <Toast alert={alert} />
 
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">
-          Pelanggan
-        </label>
-        <SearchableCombobox
-          value={selectedPelanggan}
-          onChange={(val) => {
-            handlePelangganChange({
-              target: { value: val },
-            });
-          }}
+        <FL>Pelanggan</FL>
+        <Combo
+          value={selectedPel}
+          onChange={handlePelChange}
           options={pelangganList.map((p) => ({
             value: p.id_pelanggan,
             label: p.nama_pelanggan,
@@ -808,26 +1303,18 @@ const TabRedeem = () => {
       </div>
 
       {pelangganInfo && (
-        <div className="flex items-center gap-2 bg-[#FFF0F4] border border-[#FF4778] rounded-[12px] px-4 py-2 text-sm">
-          <Gift size={16} className="text-[#FF4778]" />
-          <span className="font-semibold text-gray-700">
-            {pelangganInfo.nama_pelanggan}
-          </span>
-          <span className="text-gray-400">|</span>
-          <span className="text-[#FF4778] font-bold">
-            {pelangganInfo.poin} Poin
-          </span>
-        </div>
+        <PoinChip
+          nama={pelangganInfo.nama_pelanggan}
+          poin={pelangganInfo.poin}
+        />
       )}
 
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">
-          Reward
-        </label>
-        <SearchableCombobox
+        <FL>Reward</FL>
+        <Combo
           value={selectedReward}
-          onChange={(val) => {
-            setSelectedReward(val);
+          onChange={(v) => {
+            setSelectedReward(v);
             setResult(null);
           }}
           options={rewardList.map((r) => ({
@@ -839,10 +1326,9 @@ const TabRedeem = () => {
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">
-          Jumlah (Qty)
-        </label>
+        <FL>Jumlah (Qty)</FL>
         <input
+          className="lp-input"
           type="number"
           min={1}
           value={qty}
@@ -850,62 +1336,153 @@ const TabRedeem = () => {
             setQty(e.target.value);
             setResult(null);
           }}
-          className="border border-gray-300 rounded-[10px] px-3 py-2 text-sm w-full focus:ring-[#FF4778] focus:border-[#FF4778] outline-none"
         />
       </div>
 
-      {selectedRewardData && qty >= 1 && (
-        <div className="bg-gray-50 border border-gray-200 rounded-[12px] px-4 py-3 text-sm text-gray-700 space-y-1">
-          <div className="flex justify-between">
-            <span>Reward:</span>
-            <span className="font-semibold">
-              {selectedRewardData.nama_produk}
+      {/* Summary */}
+      {selRewardData && qty >= 1 && (
+        <div
+          style={{
+            background:
+              "linear-gradient(135deg,var(--surface-2),var(--rose-pale))",
+            border: "1.5px solid var(--rose-border)",
+            borderRadius: 13,
+            padding: "13px 16px",
+          }}
+        >
+          {[
+            ["Reward", selRewardData.nama_produk],
+            ["Poin / item", selRewardData.poin_required],
+            ["Qty", qty],
+          ].map(([k, v]) => (
+            <div
+              key={k}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 5,
+                fontSize: 13,
+              }}
+            >
+              <span style={{ color: "var(--ink-muted)" }}>{k}</span>
+              <span style={{ fontWeight: 500 }}>{v}</span>
+            </div>
+          ))}
+          <div
+            style={{
+              borderTop: "1px solid var(--rose-border)",
+              marginTop: 8,
+              paddingTop: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Total Poin</span>
+            <span
+              style={{ fontSize: 16, fontWeight: 800, color: "var(--rose)" }}
+            >
+              {totalPoin.toLocaleString("id-ID")}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span>Poin/item:</span>
-            <span>{selectedRewardData.poin_required}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Qty:</span>
-            <span>{qty}</span>
-          </div>
-          <div className="flex justify-between font-bold text-[#FF4778] border-t pt-1">
-            <span>Total Poin:</span>
-            <span>{totalPoin} poin</span>
-          </div>
+          {pelangganInfo && !cukup && totalPoin > 0 && (
+            <div
+              style={{
+                marginTop: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: 11,
+                color: "#B91C1C",
+              }}
+            >
+              <AlertCircle size={12} /> Poin tidak mencukupi (
+              {pelangganInfo.poin.toLocaleString("id-ID")} tersedia)
+            </div>
+          )}
         </div>
       )}
 
       <button
+        className="lp-btn lp-primary full"
         onClick={handleRedeem}
-        disabled={isSubmitting || !selectedPelanggan || !selectedReward}
-        className="w-full bg-[#FF4778] hover:bg-[#FF87A7] disabled:opacity-50 disabled:cursor-not-allowed text-white py-2 rounded-[10px] text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+        disabled={isSubmitting || !selectedPel || !selectedReward}
       >
-        <RefreshCcw size={16} />
+        <RefreshCcw size={14} />
         {isSubmitting ? "Memproses..." : "Redeem Sekarang"}
       </button>
 
+      {/* Result */}
       {result && (
-        <div className="bg-green-50 border border-green-200 rounded-[12px] px-4 py-3 text-sm text-green-800 space-y-1">
-          <p className="font-bold">✅ Redeem Berhasil!</p>
-          <div className="flex justify-between">
-            <span>Produk:</span>
-            <span>{result.nama_produk}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Qty:</span>
-            <span>{result.qty}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Poin digunakan:</span>
-            <span className="text-red-500 font-semibold">
-              -{result.poin_digunakan}
+        <div
+          className="lp-fade"
+          style={{
+            background: "var(--green-pale)",
+            border: "1.5px solid #A7F3D0",
+            borderRadius: 13,
+            padding: "15px 16px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 7,
+              marginBottom: 10,
+            }}
+          >
+            <CheckCircle2 size={15} style={{ color: "var(--green)" }} />
+            <span
+              style={{ fontWeight: 700, color: "var(--green)", fontSize: 14 }}
+            >
+              Redeem Berhasil!
             </span>
           </div>
-          <div className="flex justify-between font-bold border-t pt-1">
-            <span>Sisa Poin:</span>
-            <span className="text-[#FF4778]">{result.sisa_poin} poin</span>
+          {[
+            ["Produk", result.nama_produk],
+            ["Qty", result.qty],
+          ].map(([k, v]) => (
+            <div
+              key={k}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 5,
+                fontSize: 13,
+              }}
+            >
+              <span style={{ color: "var(--ink-muted)" }}>{k}</span>
+              <span style={{ fontWeight: 500 }}>{v}</span>
+            </div>
+          ))}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 5,
+              fontSize: 13,
+            }}
+          >
+            <span style={{ color: "var(--ink-muted)" }}>Poin digunakan</span>
+            <span style={{ fontWeight: 700, color: "var(--rose)" }}>
+              −{result.poin_digunakan.toLocaleString("id-ID")}
+            </span>
+          </div>
+          <div
+            style={{
+              borderTop: "1px solid #A7F3D0",
+              marginTop: 8,
+              paddingTop: 8,
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontWeight: 700, fontSize: 13 }}>Sisa Poin</span>
+            <span
+              style={{ fontWeight: 800, color: "var(--green)", fontSize: 14 }}
+            >
+              {result.sisa_poin.toLocaleString("id-ID")}
+            </span>
           </div>
         </div>
       )}
@@ -913,9 +1490,9 @@ const TabRedeem = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// TAB: PENGATURAN POIN
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+// TAB: PENGATURAN
+// ═══════════════════════════════════════════
 const TabPengaturan = () => {
   const [poinKelipatan, setPoinKelipatan] = useState("");
   const [originalValue, setOriginalValue] = useState("");
@@ -927,10 +1504,10 @@ const TabPengaturan = () => {
     setLoading(true);
     api
       .get("/pengaturan/")
-      .then((res) => {
-        const val = String(res.data.data.poin_kelipatan);
-        setPoinKelipatan(val);
-        setOriginalValue(val);
+      .then((r) => {
+        const v = String(r.data.data.poin_kelipatan);
+        setPoinKelipatan(v);
+        setOriginalValue(v);
       })
       .catch(() => showAlert("error", "Gagal mengambil pengaturan."))
       .finally(() => setLoading(false));
@@ -938,7 +1515,7 @@ const TabPengaturan = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting || !poinKelipatan || Number(poinKelipatan) < 1) return;
+    if (isSubmitting || Number(poinKelipatan) < 1) return;
     setIsSubmitting(true);
     try {
       await api.put("/pengaturan/", { poin_kelipatan: Number(poinKelipatan) });
@@ -952,179 +1529,290 @@ const TabPengaturan = () => {
   };
 
   const isDirty = poinKelipatan !== originalValue;
-  const previewRows = [1, 2, 3, 4].map((m) => ({
-    belanja: Number(poinKelipatan || 35000) * m,
-    poin: m,
-  }));
+  const keli = Number(poinKelipatan || 35000);
+  const preview = [1, 2, 3, 4].map((m) => ({ belanja: keli * m, poin: m }));
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
-      {alert.show && (
-        <div
-          className={`fixed top-4 left-1/2 z-[9999] -translate-x-1/2 px-6 py-3 rounded shadow-lg text-white text-sm font-semibold ${
-            alert.type === "success" ? "bg-green-600" : "bg-red-600"
-          }`}
-          style={{ minWidth: 220, textAlign: "center" }}
-        >
-          {alert.message}
-        </div>
-      )}
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 32 }}>
+      <Toast alert={alert} />
 
-      {/* Form */}
-      <div className="w-full sm:max-w-sm space-y-4">
-        <div className="flex items-center gap-2">
-          <Settings size={16} className="text-[#FF4778]" />
-          <p className="text-sm font-semibold">Aturan Poin</p>
+      {/* Form side */}
+      <div style={{ flex: "1 1 240px", maxWidth: 320 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              background: "var(--rose-pale)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Settings size={14} color="var(--rose)" />
+          </div>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>
+            Aturan Perhitungan Poin
+          </span>
         </div>
+
         {loading ? (
-          <p className="text-gray-400 text-sm">Memuat...</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[80, 220, 120].map((w, i) => (
+              <div
+                key={i}
+                className="skeleton"
+                style={{ height: 13, width: w }}
+              />
+            ))}
+          </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: 14 }}
+          >
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Kelipatan Belanja per Poin (Rp)
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm pointer-events-none">
+              <FL>Kelipatan Belanja per Poin (Rp)</FL>
+              <div style={{ position: "relative" }}>
+                <span
+                  style={{
+                    position: "absolute",
+                    left: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: 12,
+                    color: "var(--ink-muted)",
+                    pointerEvents: "none",
+                  }}
+                >
                   Rp
                 </span>
                 <input
+                  className="lp-input has-prefix"
                   type="number"
                   min={1}
+                  required
                   value={poinKelipatan}
                   onChange={(e) => setPoinKelipatan(e.target.value)}
-                  className="border border-gray-300 rounded-[10px] pl-9 pr-3 py-2 text-sm w-full focus:ring-[#FF4778] focus:border-[#FF4778] outline-none"
-                  required
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1">
-                Setiap Rp{Number(poinKelipatan || 0).toLocaleString("id-ID")} =
-                1 poin
-              </p>
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 12,
+                  color: "var(--ink-muted)",
+                }}
+              >
+                Setiap{" "}
+                <strong style={{ color: "var(--rose)" }}>
+                  Rp{Number(poinKelipatan || 0).toLocaleString("id-ID")}
+                </strong>{" "}
+                = 1 poin
+              </div>
             </div>
             <button
               type="submit"
+              className="lp-btn lp-primary full"
               disabled={isSubmitting || !isDirty}
-              className="w-full bg-[#FF4778] hover:bg-[#FF87A7] disabled:opacity-40 disabled:cursor-not-allowed text-white py-2 rounded-[10px] text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"
             >
-              <Save size={15} />{" "}
+              <Save size={13} />{" "}
               {isSubmitting ? "Menyimpan..." : "Simpan Pengaturan"}
             </button>
             {!isDirty && !loading && (
-              <p className="text-xs text-center text-gray-400">
+              <div
+                style={{
+                  textAlign: "center",
+                  fontSize: 11,
+                  color: "var(--ink-muted)",
+                }}
+              >
                 Tidak ada perubahan.
-              </p>
+              </div>
             )}
           </form>
         )}
       </div>
 
-      {/* Preview */}
-      <div className="w-full sm:max-w-xs">
-        <p className="text-sm font-semibold mb-3">Preview Perhitungan</p>
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-              <th className="px-3 py-2">Total Belanja</th>
-              <th className="px-3 py-2 text-center">Poin</th>
-            </tr>
-          </thead>
-          <tbody>
-            {previewRows.map((row, idx) => (
-              <tr key={idx} className="border-b hover:bg-gray-50">
-                <td className="px-3 py-2">
-                  Rp{row.belanja.toLocaleString("id-ID")}
+      {/* Preview side */}
+      <div style={{ flex: "1 1 200px", maxWidth: 300 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              background: "var(--gold-pale)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <TrendingUp size={14} color="var(--gold)" />
+          </div>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>
+            Preview Perhitungan
+          </span>
+        </div>
+        <div
+          style={{
+            border: "1.5px solid var(--border)",
+            borderRadius: 13,
+            overflow: "hidden",
+          }}
+        >
+          <table
+            style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
+          >
+            <thead>
+              <tr>
+                <TH>Total Belanja</TH>
+                <TH center>Poin</TH>
+              </tr>
+            </thead>
+            <tbody>
+              {preview.map((row, i) => (
+                <tr
+                  key={i}
+                  style={{
+                    borderBottom: "1px solid var(--border)",
+                    background: "var(--white)",
+                  }}
+                >
+                  <td style={{ padding: "10px 14px", color: "var(--ink)" }}>
+                    Rp{row.belanja.toLocaleString("id-ID")}
+                  </td>
+                  <td style={{ padding: "10px 14px", textAlign: "center" }}>
+                    <Badge>
+                      <Star size={9} /> {row.poin}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+              <tr style={{ background: "var(--surface-2)" }}>
+                <td
+                  style={{
+                    padding: "9px 14px",
+                    fontSize: 11,
+                    color: "var(--ink-muted)",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Rp{Math.floor(keli * 0.8).toLocaleString("id-ID")} (sisa)
                 </td>
-                <td className="px-3 py-2 text-center">
-                  <span className="bg-[#FFF0F4] text-[#FF4778] font-bold px-2 py-0.5 rounded-full text-xs">
-                    {row.poin}
-                  </span>
+                <td
+                  style={{
+                    padding: "9px 14px",
+                    textAlign: "center",
+                    fontWeight: 700,
+                    color: "var(--ink-muted)",
+                  }}
+                >
+                  0
                 </td>
               </tr>
-            ))}
-            <tr className="border-b bg-gray-50 text-xs text-gray-400">
-              <td className="px-3 py-2 italic">
-                Rp
-                {Math.floor(
-                  Number(poinKelipatan || 35000) * 0.8
-                ).toLocaleString("id-ID")}{" "}
-                (tidak cukup)
-              </td>
-              <td className="px-3 py-2 text-center font-bold">0</td>
-            </tr>
-          </tbody>
-        </table>
-        <p className="text-xs text-gray-400 mt-2">
+            </tbody>
+          </table>
+        </div>
+        <div style={{ marginTop: 7, fontSize: 11, color: "var(--ink-muted)" }}>
           * Berlaku kelipatan. Sisa belanja tidak dihitung.
-        </p>
+        </div>
       </div>
     </div>
   );
 };
 
-// ─────────────────────────────────────────────
-// MAIN PAGE
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════
 const role = localStorage.getItem("role");
 
 const TABS = [
   {
-    key: "histori",
-    label: "Histori Poin",
-    icon: <History size={16} />,
-    roles: ["admin", "kasir"],
-  },
-  {
     key: "redeem",
     label: "Redeem Poin",
-    icon: <RefreshCcw size={16} />,
+    icon: RefreshCcw,
     roles: ["admin", "kasir"],
   },
   {
-    key: "reward",
-    label: "Reward Poin",
-    icon: <Gift size={16} />,
-    roles: ["admin"],
+    key: "histori",
+    label: "Histori Poin",
+    icon: History,
+    roles: ["admin", "kasir"],
   },
-  {
-    key: "pengaturan",
-    label: "Pengaturan",
-    icon: <Settings size={16} />,
-    roles: ["admin"],
-  },
+  { key: "reward", label: "Reward Poin", icon: Gift, roles: ["admin"] },
+  { key: "pengaturan", label: "Pengaturan", icon: Settings, roles: ["admin"] },
 ].filter((t) => t.roles.includes(role));
 
 const LoyaltyPoin = () => {
   const [activeTab, setActiveTab] = useState(TABS[0]?.key || "histori");
 
   return (
-    <div className="">
-      <h1 className="text-2xl font-bold pb-2">Loyalty Poin</h1>
-      <div className="bg-white rounded-[20px] py-4 px-6 shadow-md">
-        {/* Tab Header */}
-        <div className="flex gap-1 mb-5 border-b border-gray-200 overflow-x-auto">
-          {TABS.map((tab) => (
+    <div>
+      <h1
+        style={{
+          fontSize: 22,
+          fontWeight: 700,
+          color: "var(--ink)",
+          marginBottom: 20,
+        }}
+      >
+        Loyalty Poin
+      </h1>
+
+      {/* Card */}
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 18,
+          border: "1.5px solid var(--border)",
+          boxShadow: "0 2px 16px rgba(26,17,24,0.05)",
+          padding: "20px 24px 24px",
+        }}
+      >
+        {/* Tab bar */}
+        <div
+          className="lp-tabs-bar"
+          style={{
+            display: "flex",
+            gap: 2,
+            borderBottom: "2px solid var(--border)",
+            marginBottom: 22,
+            overflowX: "auto",
+          }}
+        >
+          {TABS.map(({ key, label, icon: Icon }) => (
             <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-t-lg whitespace-nowrap transition-all duration-200 border-b-2 -mb-[2px]
-                ${
-                  activeTab === tab.key
-                    ? "border-[#FF4778] text-[#FF4778] bg-[#FFF0F4]"
-                    : "border-transparent text-gray-500 hover:text-[#FF4778] hover:bg-gray-50"
-                }`}
+              key={key}
+              className={`lp-tab${activeTab === key ? " active" : ""}`}
+              onClick={() => setActiveTab(key)}
             >
-              {tab.icon}
-              {tab.label}
+              <Icon size={14} /> {label}
             </button>
           ))}
         </div>
 
-        {/* Tab Content */}
-        {activeTab === "histori" && <TabHistori />}
-        {activeTab === "reward" && <TabReward />}
-        {activeTab === "redeem" && <TabRedeem />}
-        {activeTab === "pengaturan" && <TabPengaturan />}
+        {/* Content */}
+        <div className="lp-fade" key={activeTab}>
+          {activeTab === "histori" && <TabHistori />}
+          {activeTab === "reward" && <TabReward />}
+          {activeTab === "redeem" && <TabRedeem />}
+          {activeTab === "pengaturan" && <TabPengaturan />}
+        </div>
       </div>
     </div>
   );

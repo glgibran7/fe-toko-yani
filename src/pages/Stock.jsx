@@ -685,13 +685,15 @@ const Stock = () => {
 
   // Tambahkan state dan fungsi search input di dalam komponen Stock
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Fungsi untuk handle perubahan input search
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
   };
 
-  // Filter data produk berdasarkan search (nama_produk, barcode, kategori, satuan)
+  // Filter data produk berdasarkan search
   const filteredData = sortedData.filter(
     (item) =>
       (item.nama_produk &&
@@ -702,6 +704,19 @@ const Stock = () => {
         item.kategori.toLowerCase().includes(search.toLowerCase())) ||
       (item.satuan && item.satuan.toLowerCase().includes(search.toLowerCase()))
   );
+
+  // Pagination
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset ke halaman 1 saat search berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedLokasi]);
 
   return (
     <div className="">
@@ -814,9 +829,9 @@ const Stock = () => {
             <table className="w-full text-[17px] text-left text-black">
               <thead className="text-md text-black uppercase bg-gray-50 z-50 sticky top-0">
                 <tr>
-                  <th className="px-0.5 py-0.5 text-center">No</th>
+                  <th className="px-3 py-2 text-center">No</th>
                   <th
-                    className="px-0.5 py-0.5 cursor-pointer select-none"
+                    className="px-3 py-2 cursor-pointer select-none"
                     onClick={() => handleSort("barcode")}
                   >
                     <div className="flex items-center">
@@ -825,7 +840,7 @@ const Stock = () => {
                     </div>
                   </th>
                   <th
-                    className="px-0.5 py-0.5 cursor-pointer select-none"
+                    className="px-3 py-2 cursor-pointer select-none"
                     onClick={() => handleSort("nama_produk")}
                   >
                     <div className="flex items-center">
@@ -836,11 +851,11 @@ const Stock = () => {
                       />
                     </div>
                   </th>
-                  <th className="px-0.5 py-0.5">Kategori</th>
-                  <th className="px-0.5 py-0.5">Satuan</th>
-                  <th className="px-0.5 py-0.5 text-center">Experied</th>
+                  <th className="px-3 py-2">Kategori</th>
+                  <th className="px-3 py-2">Satuan</th>
+                  <th className="px-3 py-2 text-center">Experied</th>
                   <th
-                    className="px-0.5 py-0.5 cursor-pointer select-none"
+                    className="px-3 py-2 cursor-pointer select-none"
                     onClick={() => handleSort("harga_beli")}
                   >
                     <div className="flex items-center">
@@ -864,7 +879,7 @@ const Stock = () => {
                     </div>
                   </th>
 
-                  <th className="px-0.5 py-0.5 text-center">Optimal</th>
+                  <th className="px-3 py-2 text-center">Optimal</th>
                   <th
                     className="px-1 py-0.5 cursor-pointer select-none"
                     onClick={() => handleSort("jumlah")}
@@ -875,34 +890,35 @@ const Stock = () => {
                     </div>
                   </th>
 
-                  <th className="px-0.5 py-0.5 text-center">Mutasi</th>
-                  <th className="px-0.5 py-0.5 text-center">Edit</th>
-                  <th className="px-0.5 py-0.5 text-center">Hapus</th>
-                  <th className="px-0.5 py-0.5 text-center">Cetak</th>
+                  <th className="px-2 py-2 text-center w-[180px]">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredData.length === 0 ? (
+                {paginatedData.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="text-center text-gray-400 py-8">
                       Data tidak ditemukan.
                     </td>
                   </tr>
                 ) : (
-                  filteredData.map((item, idx) => (
-                    <tr key={item.id || idx} className="bg-white border-b">
-                      <td className="px-0.5 py-0.5 text-center">{idx + 1}</td>
-                      <td className="px-0.5 py-0.5">{item.barcode}</td>
-                      <td className="px-0.5 py-0.5 capitalize">
+                  paginatedData.map((item, idx) => (
+                    <tr
+                      key={item.id || idx}
+                      className="bg-white border-b hover:bg-gray-50 transition"
+                    >
+                      {" "}
+                      <td className="px-3 py-2 text-center">
+                        {(currentPage - 1) * itemsPerPage + idx + 1}
+                      </td>
+                      <td className="px-3 py-2">{item.barcode}</td>
+                      <td className="px-3 py-2 capitalize">
                         {item.nama_produk}
                       </td>
-                      <td className="px-0.5 py-0.5 capitalize">
-                        {item.kategori}
-                      </td>
-                      <td className="px-0.5 py-0.5 capitalize text-center">
+                      <td className="px-3 py-2 capitalize">{item.kategori}</td>
+                      <td className="px-3 py-2 capitalize text-center">
                         {item.satuan}
                       </td>
-                      <td className="px-0.5 py-0.5 text-center">
+                      <td className="px-3 py-2 text-center">
                         {item.expired_date
                           ? new Date(item.expired_date).toLocaleDateString(
                               "id-ID",
@@ -914,100 +930,109 @@ const Stock = () => {
                             )
                           : "-"}
                       </td>
-
                       <td className="px-1 py-1">
                         Rp.
                         {Number(item.harga_beli).toLocaleString("id-ID")}
                       </td>
-                      <td className="px-0.5 py-0.5">
+                      <td className="px-3 py-2">
                         Rp.
                         {Number(item.harga_jual).toLocaleString("id-ID")}
                       </td>
-                      <td className="px-0.5 py-0.5 text-center">
+                      <td className="px-3 py-2 text-center">
                         {item.stok_optimal}
                       </td>
-                      <td
-                        className={`px-0.5 py-0.5 text-center font-semibold ${
-                          item.jumlah < item.stok_optimal
-                            ? "text-red-600"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        {item.jumlah}
-                      </td>
-
-                      {/* Kolom Mutasi */}
-                      <td className="px-0.5 py-0.5 text-center">
-                        {!readOnly && (
-                          <button
-                            className="bg-[#FF4778] hover:bg-[#FF87A7] text-white px-1 py-1 rounded-[10px] text-xs"
-                            onClick={() => handleAddToMutasi(item)}
-                            title="Mutasi"
-                          >
-                            <FaExchangeAlt />
-                          </button>
-                        )}
-                      </td>
-
-                      {/* Kolom Edit */}
-                      <td className="px-0.5 py-0.5 text-center">
-                        <button
-                          className="bg-green-500 hover:bg-green-600 text-white px-1 py-1 rounded-[10px] text-xs"
-                          onClick={() => openEditModal(item)}
-                          title="Edit"
+                      <td className="px-2 py-2 text-center">
+                        <span
+                          className={`
+      inline-flex items-center justify-center
+      min-w-[45px]
+      px-2 py-1
+      rounded-full
+      text-xs font-semibold
+      ${
+        item.jumlah < item.stok_optimal
+          ? "bg-red-100 text-red-600"
+          : "bg-emerald-100 text-emerald-700"
+      }
+    `}
                         >
-                          <FaEdit />
-                        </button>
+                          {item.jumlah}
+                        </span>
                       </td>
-
-                      {/* Kolom Hapus */}
-                      <td className="px-0.5 py-0.5 text-center">
-                        {!readOnly && (
-                          <button
-                            className="bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded-[10px] text-xs"
-                            onClick={() => handleDelete(item)}
-                            title="Hapus"
-                          >
-                            <FaTrash />
-                          </button>
-                        )}
-                      </td>
-
-                      <td className="px-0.5 py-0.5">
-                        <input
-                          type="checkbox"
-                          className="ml-1 mr-1"
-                          checked={selectedToPrint.some(
-                            (x) => x.id_stok === item.id_stok
+                      {/* Kolom Mutasi */}
+                      <td className="sticky right-0 bg-white px-2 py-2 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]">
+                        {" "}
+                        <div className="flex items-center justify-center gap-2">
+                          {/* Mutasi */}
+                          {!readOnly && (
+                            <button
+                              onClick={() => handleAddToMutasi(item)}
+                              title="Mutasi"
+                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-pink-500 hover:bg-pink-600 text-white transition"
+                            >
+                              <FaExchangeAlt size={14} />
+                            </button>
                           )}
-                          onChange={() => handleCheckboxChange(item)}
-                        />
 
-                        {selectedToPrint.find(
-                          (x) => x.id_stok === item.id_stok
-                        ) && (
-                          <input
-                            type="number"
-                            min="1"
-                            value={
-                              selectedToPrint.find(
+                          {/* Edit */}
+                          <button
+                            onClick={() => openEditModal(item)}
+                            title="Edit"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-500 hover:bg-green-600 text-white transition"
+                          >
+                            <FaEdit size={14} />
+                          </button>
+
+                          {/* Hapus */}
+                          {!readOnly && (
+                            <button
+                              onClick={() => handleDelete(item)}
+                              title="Hapus"
+                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500 hover:bg-red-600 text-white transition"
+                            >
+                              <FaTrash size={14} />
+                            </button>
+                          )}
+
+                          {/* Cetak */}
+                          <div className="flex items-center gap-1 border rounded-lg px-2 py-1 bg-gray-50">
+                            <input
+                              type="checkbox"
+                              checked={selectedToPrint.some(
                                 (x) => x.id_stok === item.id_stok
-                              )?.jumlah ?? ""
-                            }
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setSelectedToPrint((prev) =>
-                                prev.map((x) =>
-                                  x.id_stok === item.id_stok
-                                    ? { ...x, jumlah: value }
-                                    : x
-                                )
-                              );
-                            }}
-                            className="w-12 text-xs border rounded px-1"
-                            placeholder="Qty"
-                          />
-                        )}
+                              )}
+                              onChange={() => handleCheckboxChange(item)}
+                              className="accent-blue-600"
+                            />
+
+                            {selectedToPrint.find(
+                              (x) => x.id_stok === item.id_stok
+                            ) && (
+                              <input
+                                type="number"
+                                min="1"
+                                placeholder="Qty"
+                                value={
+                                  selectedToPrint.find(
+                                    (x) => x.id_stok === item.id_stok
+                                  )?.jumlah ?? ""
+                                }
+                                onChange={(e) => {
+                                  const value = e.target.value;
+
+                                  setSelectedToPrint((prev) =>
+                                    prev.map((x) =>
+                                      x.id_stok === item.id_stok
+                                        ? { ...x, jumlah: value }
+                                        : x
+                                    )
+                                  );
+                                }}
+                                className="w-14 text-xs border rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              />
+                            )}
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -1015,6 +1040,98 @@ const Stock = () => {
               </tbody>
             </table>
           )}
+        </div>
+        {/* Pagination Controls */}
+        <div className="flex items-center justify-between mt-3 px-1">
+          {/* Limit selector */}
+          <div className="flex items-center gap-2 text-xs text-gray-600">
+            <span>Tampilkan</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="border border-[#FF4778] rounded-[8px] px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#FF4778]"
+            >
+              {[50, 100, 150, 200].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+            <span>data per halaman</span>
+            <span className="ml-2 text-gray-400">({totalItems} total)</span>
+          </div>
+
+          {/* Page navigation */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="px-2 py-1 text-xs rounded-[8px] border border-gray-300 disabled:opacity-40 hover:border-[#FF4778] hover:text-[#FF4778]"
+            >
+              «
+            </button>
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-2 py-1 text-xs rounded-[8px] border border-gray-300 disabled:opacity-40 hover:border-[#FF4778] hover:text-[#FF4778]"
+            >
+              ‹
+            </button>
+
+            {/* Page numbers */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(
+                (p) =>
+                  p === 1 ||
+                  p === totalPages ||
+                  (p >= currentPage - 2 && p <= currentPage + 2)
+              )
+              .reduce((acc, p, i, arr) => {
+                if (i > 0 && p - arr[i - 1] > 1) acc.push("...");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === "..." ? (
+                  <span
+                    key={`ellipsis-${i}`}
+                    className="px-1 text-xs text-gray-400"
+                  >
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p)}
+                    className={`px-2 py-1 text-xs rounded-[8px] border ${
+                      currentPage === p
+                        ? "bg-[#FF4778] text-white border-[#FF4778]"
+                        : "border-gray-300 hover:border-[#FF4778] hover:text-[#FF4778]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-2 py-1 text-xs rounded-[8px] border border-gray-300 disabled:opacity-40 hover:border-[#FF4778] hover:text-[#FF4778]"
+            >
+              ›
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-2 py-1 text-xs rounded-[8px] border border-gray-300 disabled:opacity-40 hover:border-[#FF4778] hover:text-[#FF4778]"
+            >
+              »
+            </button>
+          </div>
         </div>
         <div className="flex items-center justify-between mt-4">
           <div className="flex space-x-2">
@@ -1055,19 +1172,19 @@ const Stock = () => {
                 <table className="w-full text-sm text-left text-gray-500">
                   <thead>
                     <tr>
-                      <th className="px-0.5 py-0.5">Nama Produk</th>
-                      <th className="px-0.5 py-0.5">Qty Mutasi</th>
-                      <th className="px-0.5 py-0.5">Satuan</th>
-                      <th className="px-0.5 py-0.5">Harga Jual</th>
-                      <th className="px-0.5 py-0.5">Keterangan</th>
-                      <th className="px-0.5 py-0.5">Aksi</th>
+                      <th className="px-3 py-2">Nama Produk</th>
+                      <th className="px-3 py-2">Qty Mutasi</th>
+                      <th className="px-3 py-2">Satuan</th>
+                      <th className="px-3 py-2">Harga Jual</th>
+                      <th className="px-3 py-2">Keterangan</th>
+                      <th className="px-3 py-2">Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {mutasiItems.map((item, idx) => (
                       <tr key={idx} className="bg-gray-200">
-                        <td className="px-0.5 py-0.5">{item.nama_produk}</td>
-                        <td className="px-0.5 py-0.5">
+                        <td className="px-3 py-2">{item.nama_produk}</td>
+                        <td className="px-3 py-2">
                           <input
                             type="number"
                             min={1}
@@ -1078,9 +1195,9 @@ const Stock = () => {
                             className="w-16 border rounded px-1 py-0.5 text-center"
                           />
                         </td>
-                        <td className="px-0.5 py-0.5">{item.satuan}</td>
-                        <td className="px-0.5 py-0.5">Rp.{item.harga_jual}</td>
-                        <td className="px-0.5 py-0.5">
+                        <td className="px-3 py-2">{item.satuan}</td>
+                        <td className="px-3 py-2">Rp.{item.harga_jual}</td>
+                        <td className="px-3 py-2">
                           <input
                             type="text"
                             value={item.keterangan || ""}
@@ -1098,7 +1215,7 @@ const Stock = () => {
                             required
                           />
                         </td>
-                        <td className="px-0.5 py-0.5">
+                        <td className="px-3 py-2">
                           <button
                             className="bg-white hover:bg-gray-300 text-black px-2 py-1 rounded text-xs"
                             onClick={() => handleHapusMutasi(idx)}

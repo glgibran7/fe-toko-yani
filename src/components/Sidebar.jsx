@@ -24,10 +24,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: "Stock", icon: <Package size={20} />, path: "/stock" },
     { name: "Pelanggan", icon: <Users size={20} />, path: "/pelanggan" },
     { name: "Hutang", icon: <DollarSign size={20} />, path: "/hutang" },
+    { name: "Loyalty", icon: <Gift size={20} />, path: "/loyalty" },
     ...(role === "admin"
       ? [{ name: "Laporan", icon: <FileText size={20} />, path: "/laporan" }]
       : []),
-    { name: "Loyalty", icon: <Gift size={20} />, path: "/loyalty" },
+
     { name: "Tentang", icon: <BadgeInfo size={20} />, path: "/tentang" },
   ];
 
