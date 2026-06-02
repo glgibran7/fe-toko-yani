@@ -23,8 +23,14 @@ export const useHistoryTransaksi = ({
   useEffect(() => {
     if (lihatHistoryTransaksiOpen) {
       api
-        .get("/pelanggan/", { headers: getAuthHeaders() })
-        .then((res) => setHistoryTransaksiList(res.data || []))
+        .get("/pelanggan/", {
+          headers: getAuthHeaders(),
+        })
+        .then((res) =>
+          setHistoryTransaksiList(
+            Array.isArray(res.data.data) ? res.data.data : []
+          )
+        )
         .catch(() => setHistoryTransaksiList([]));
     }
   }, [lihatHistoryTransaksiOpen]);

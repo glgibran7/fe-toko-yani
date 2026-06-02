@@ -19,35 +19,50 @@ const RingkasanPembayaran = ({
   bayarInputRef,
 }) => {
   return (
-    <div className="flex justify-end mt-4">
-      <div className="flex flex-col md:flex-row gap-8 justify-between mt-2">
-        {/* Kolom kiri: subtotal, diskon, total */}
-        <div className="space-y-4 w-full md:w-1/2 pr-4">
-          <div className="flex justify-between">
-            <label className="text-sm text-black pr-2">SubTotal</label>
-            <input
-              type="text"
-              value={`Rp. ${subtotal.toLocaleString("id-ID")}`}
-              className="text-xl text-end border border-black rounded-lg px-2 w-40"
-              readOnly
-            />
+    <div className="w-full mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* LEFT CARD */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 space-y-5">
+          <div className="border-b border-gray-100 pb-3">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Ringkasan Pembayaran
+            </h2>
+            <p className="text-sm text-gray-500">
+              Detail subtotal, diskon, dan total pembayaran
+            </p>
           </div>
 
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-black pr-2">Diskon</label>
-            <div className="flex gap-2 items-center">
+          {/* Subtotal */}
+          <div className="flex items-center justify-between gap-4">
+            <label className="text-sm font-medium text-gray-600">
+              Subtotal
+            </label>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 min-w-[180px] text-right">
+              <span className="text-lg font-semibold text-gray-800">
+                Rp {subtotal.toLocaleString("id-ID")}
+              </span>
+            </div>
+          </div>
+
+          {/* Diskon */}
+          <div className="flex items-center justify-between gap-4">
+            <label className="text-sm font-medium text-gray-600">Diskon</label>
+
+            <div className="flex items-center gap-2">
               <input
                 type="number"
                 min={0}
                 value={diskonValue}
                 onChange={(e) => setDiskonValue(e.target.value)}
-                className="text-xl text-end border border-black rounded-lg px-2 w-24"
-                placeholder="Diskon"
+                placeholder="0"
+                className="w-28 rounded-xl border border-gray-300 px-3 py-2 text-right text-lg focus:outline-none focus:ring-2 focus:ring-black"
               />
+
               <select
                 value={diskonType}
                 onChange={(e) => setDiskonType(e.target.value)}
-                className="text-md border border-black rounded-lg px-2 py-1"
+                className="rounded-xl border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-black"
               >
                 <option value="persen">%</option>
                 <option value="nominal">Rp</option>
@@ -55,33 +70,43 @@ const RingkasanPembayaran = ({
             </div>
           </div>
 
-          <div className="flex justify-between">
-            <label className="text-sm text-black font-semibold pr-2">
+          {/* Total */}
+          <div className="flex items-center justify-between gap-4 pt-2 border-t border-gray-100">
+            <label className="text-base font-semibold text-gray-800">
               Total
             </label>
-            <input
-              type="text"
-              value={`Rp. ${total.toLocaleString("id-ID")}`}
-              className="text-xl text-end border border-black rounded-lg px-2 w-40 font-semibold"
-              readOnly
-            />
+
+            <div className="bg-black rounded-2xl px-5 py-3 min-w-[200px] text-right shadow-md">
+              <span className="text-2xl font-bold text-white">
+                Rp {total.toLocaleString("id-ID")}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Kolom kanan: bayar, kembalian, pelanggan, tombol */}
-        <div className="space-y-4 w-full md:w-1/2 pr-4">
-          <div className="flex justify-between">
-            <label className="text-sm text-black pr-2">Bayar</label>
+        {/* RIGHT CARD */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 space-y-5">
+          <div className="border-b border-gray-100 pb-3">
+            <h2 className="text-lg font-semibold text-gray-800">Pembayaran</h2>
+            <p className="text-sm text-gray-500">
+              Input pembayaran dan pelanggan
+            </p>
+          </div>
+
+          {/* Bayar */}
+          <div className="flex items-center justify-between gap-4">
+            <label className="text-sm font-medium text-gray-600">Bayar</label>
+
             <input
               ref={bayarInputRef}
               type="text"
               inputMode="numeric"
-              min={0}
               value={bayar.toLocaleString("id-ID")}
               onChange={handleBayarChange}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
+
                   if (e.shiftKey) {
                     handleSubmitTanpaCetakStruk();
                   } else {
@@ -89,83 +114,104 @@ const RingkasanPembayaran = ({
                   }
                 }
               }}
-              className="text-xl text-end border border-black rounded-lg px-2 w-40"
+              className="w-[220px] rounded-xl border border-gray-300 px-4 py-3 text-right text-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-black"
+              placeholder="0"
             />
           </div>
 
-          <div className="flex justify-between">
+          {/* Kembalian */}
+          <div className="flex items-center justify-between gap-4">
             <label
-              className={`text-sm pr-2 font-semibold ${
-                kembalian < 0 ? "text-red-700" : "text-green-700"
+              className={`text-sm font-semibold ${
+                kembalian < 0 ? "text-red-600" : "text-emerald-600"
               }`}
             >
               {kembalian < 0 ? "Hutang" : "Kembalian"}
             </label>
-            <input
-              type="text"
-              value={
+
+            <div
+              className={`rounded-2xl px-5 py-3 min-w-[220px] text-right border ${
                 kembalian < 0
-                  ? `Rp. ${Math.abs(kembalian).toLocaleString("id-ID")}`
-                  : `Rp. ${kembalian.toLocaleString("id-ID")}`
-              }
-              className={`text-xl text-end border border-black rounded-lg px-2 w-40 ${
-                kembalian < 0 ? "text-red-700" : "text-green-700"
+                  ? "bg-red-50 border-red-200"
+                  : "bg-emerald-50 border-emerald-200"
               }`}
-              readOnly
-            />
+            >
+              <span
+                className={`text-2xl font-bold ${
+                  kembalian < 0 ? "text-red-600" : "text-emerald-600"
+                }`}
+              >
+                Rp {Math.abs(kembalian).toLocaleString("id-ID")}
+              </span>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs">Nama Pelanggan</label>
+          {/* Customer */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-600">
+              Nama Pelanggan
+            </label>
+
             <div className="relative">
               <input
                 type="text"
                 readOnly
                 name="nama"
                 value={newItem.nama_pelanggan}
-                className="border border-black rounded-lg px-2 py-1 w-full pr-10 capitalize text-xl"
-                placeholder="pilih pelanggan...."
+                placeholder="Pilih pelanggan..."
+                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 pr-24 text-lg capitalize focus:outline-none"
               />
+
+              {newItem.nama_pelanggan && (
+                <button
+                  type="button"
+                  className="absolute right-12 top-1/2 -translate-y-1/2 text-xs text-red-500 hover:text-red-700"
+                  onClick={() =>
+                    setNewItem({
+                      ...newItem,
+                      id_pelanggan: null,
+                      nama_pelanggan: "",
+                      kontak: "",
+                    })
+                  }
+                >
+                  Hapus
+                </button>
+              )}
+
               <button
                 type="button"
-                className="absolute right-10 top-1/2 -translate-y-1/2 text-red-500 text-xs underline hover:text-red-700"
-                onClick={() =>
-                  setNewItem({
-                    ...newItem,
-                    id_pelanggan: null,
-                    nama_pelanggan: "",
-                    kontak: "",
-                  })
-                }
-              >
-                Hapus
-              </button>
-              <button
-                type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 hover:text-green-600"
-                title="Pilih dari daftar pelanggan"
+                title="Pilih pelanggan"
                 onClick={openKontakModal}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-black transition"
               >
-                <MdContactPage size={25} />
+                <MdContactPage size={24} />
               </button>
             </div>
           </div>
 
-          <div className="text-center mt-1 space-x-2">
+          {/* ACTION BUTTONS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
             <button
-              className="bg-gray-600 text-sm text-white px-4 py-2 rounded-[10px] w-full md:w-auto transition duration-300 ease-in-out transform hover:bg-gray-700 hover:scale-105 hover:shadow-lg"
               type="button"
               onClick={handleSubmitTanpaCetakStruk}
+              className="rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 transition-all duration-200"
             >
               Simpan
             </button>
+
             <button
-              className="bg-black text-sm text-white px-4 py-2 rounded-[10px] w-full md:w-auto transition duration-300 ease-in-out transform hover:bg-gray-800 hover:scale-105 hover:shadow-lg"
               type="button"
               onClick={handleSubmitTransaksi}
+              className="rounded-xl bg-black hover:bg-gray-900 text-white font-semibold py-3 shadow-md hover:shadow-lg transition-all duration-200"
             >
               Simpan & Cetak
             </button>
+          </div>
+
+          {/* Keyboard Hint */}
+          <div className="text-xs text-gray-400 text-center pt-2">
+            Enter = Simpan & Cetak • Shift + Enter = Simpan
           </div>
         </div>
       </div>

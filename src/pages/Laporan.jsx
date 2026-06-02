@@ -86,7 +86,7 @@ const Laporan = () => {
         })
         .catch(() => {
           setDataItem([]);
-          setError("Gagal mengambil data");
+          // setError("Gagal mengambil data");
         })
         .finally(() => setLoading(false));
     } else if (activeTab === "transaksi") {
@@ -105,7 +105,7 @@ const Laporan = () => {
         })
         .catch(() => {
           setDataTransaksi([]);
-          setError("Gagal mengambil data");
+          // setError("Gagal mengambil data");
         })
         .finally(() => setLoading(false));
     } else if (activeTab === "stok") {
@@ -125,7 +125,7 @@ const Laporan = () => {
         })
         .catch(() => {
           setDataStok([]);
-          setError("Gagal mengambil data");
+          // setError("Gagal mengambil data");
         })
         .finally(() => setLoading(false));
     }
@@ -172,13 +172,6 @@ const Laporan = () => {
     }
   }, [filterPeriodeTransaksi]);
 
-  // Sorting function
-  const filteredStok = dataStok.filter((item) => {
-    const matchLokasi = !filterLokasi || item.id_lokasi === filterLokasi;
-    const matchProduk = !filterProduk || item.id_produk === filterProduk;
-    return matchLokasi && matchProduk;
-  });
-
   const sortedData =
     activeTab === "stok"
       ? [...dataStok].sort((a, b) => {
@@ -224,6 +217,49 @@ const Laporan = () => {
     }
   };
 
+  const formatCurrency = (value) =>
+    `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
+  const formatNumber = (value) => Number(value || 0).toLocaleString("id-ID");
+
+  const itemSummary = {
+    totalProduk: sortedData.length,
+    totalQty: sortedData.reduce(
+      (acc, item) => acc + (Number(item.total_qty) || 0),
+      0
+    ),
+    totalKeuntungan: sortedData.reduce(
+      (acc, item) => acc + (Number(item.keuntungan) || 0),
+      0
+    ),
+  };
+
+  const transaksiSummary = {
+    totalTransaksi: sortedData.reduce(
+      (acc, item) => acc + (Number(item.total) || 0),
+      0
+    ),
+    totalHutang: sortedData.reduce(
+      (acc, item) => acc + (Number(item.sisa_hutang) || 0),
+      0
+    ),
+    totalKeuntungan: sortedData.reduce(
+      (acc, item) => acc + (Number(item.keuntungan) || 0),
+      0
+    ),
+  };
+
+  const stokSummary = {
+    totalItem: sortedData.length,
+    totalModal: sortedData.reduce(
+      (acc, item) => acc + (Number(item.nilai_modal) || 0),
+      0
+    ),
+    totalPotensi: sortedData.reduce(
+      (acc, item) => acc + (Number(item.potensi_keuntungan) || 0),
+      0
+    ),
+  };
+
   // Fungsi unduh PDF
   const handleDownloadPDF = () => {
     const doc = new jsPDF({ orientation: "landscape" });
@@ -245,16 +281,6 @@ const Laporan = () => {
           )?.label || "-"
         : periodeOptions.find((opt) => opt.value === filterPeriode)?.label ||
           "-";
-
-    let periodeDetail = `Periode: ${periodeText}`;
-    if (
-      (activeTab === "item" && filterPeriode === "range") ||
-      (activeTab === "transaksi" && filterPeriodeTransaksi === "range")
-    ) {
-      const start = activeTab === "item" ? tanggalAwal : tanggalAwalTransaksi;
-      const end = activeTab === "item" ? tanggalAkhir : tanggalAkhirTransaksi;
-      periodeDetail += ` (${start || "-"} s/d ${end || "-"})`;
-    }
 
     let title = "";
     let columns = [];
@@ -454,7 +480,7 @@ const Laporan = () => {
       alert("Akses hanya untuk admin!");
       navigate("/kasir");
     });
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="">
@@ -597,6 +623,42 @@ const Laporan = () => {
                   </div>
                 </>
               )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Jenis Produk
+                </div>
+                <div className="mt-1 text-2xl font-bold text-gray-800">
+                  {itemSummary.totalProduk}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Produk yang muncul dalam laporan
+                </div>
+              </div>
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Total Qty
+                </div>
+                <div className="mt-1 text-2xl font-bold text-gray-800">
+                  {formatNumber(itemSummary.totalQty)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Jumlah barang terjual
+                </div>
+              </div>
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Keuntungan
+                </div>
+                <div className="mt-1 text-2xl font-bold text-[#FF4778]">
+                  {formatCurrency(itemSummary.totalKeuntungan)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Ringkasan laba dari penjualan
+                </div>
+              </div>
             </div>
 
             {/* Tabel Laporan Item */}
@@ -849,6 +911,42 @@ const Laporan = () => {
               )}
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Total Transaksi
+                </div>
+                <div className="mt-1 text-2xl font-bold text-gray-800">
+                  {formatCurrency(transaksiSummary.totalTransaksi)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Jumlah nilai penjualan
+                </div>
+              </div>
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Total Hutang
+                </div>
+                <div className="mt-1 text-2xl font-bold text-gray-800">
+                  {formatCurrency(transaksiSummary.totalHutang)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Sisa pembayaran customer
+                </div>
+              </div>
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Keuntungan
+                </div>
+                <div className="mt-1 text-2xl font-bold text-[#FF4778]">
+                  {formatCurrency(transaksiSummary.totalKeuntungan)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Total laba selama periode
+                </div>
+              </div>
+            </div>
+
             <div
               className="relative overflow-x-auto shadow-md sm:rounded-lg border border-[#FF4778]"
               style={{ maxHeight: "300px", overflowY: "auto" }}
@@ -1097,6 +1195,42 @@ const Laporan = () => {
                 </select>
               </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Total Item Stok
+                </div>
+                <div className="mt-1 text-2xl font-bold text-gray-800">
+                  {stokSummary.totalItem}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Jumlah baris stok yang ditampilkan
+                </div>
+              </div>
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Total Modal
+                </div>
+                <div className="mt-1 text-2xl font-bold text-gray-800">
+                  {formatCurrency(stokSummary.totalModal)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Nilai modal semua stok
+                </div>
+              </div>
+              <div className="rounded-xl border border-[#FF4778]/30 bg-[#fff5f8] p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Potensi Keuntungan
+                </div>
+                <div className="mt-1 text-2xl font-bold text-[#FF4778]">
+                  {formatCurrency(stokSummary.totalPotensi)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Estimasi laba dari stok saat ini
+                </div>
+              </div>
+            </div>
+
             {/* Tabel Laporan Stok */}
             <div
               className="relative overflow-x-auto shadow-md sm:rounded-lg border border-[#FF4778]"
