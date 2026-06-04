@@ -260,9 +260,11 @@ const Combo = ({
   }, [value]);
 
   const filtered = options.filter((o) =>
-    String(o[displayKey]).toLowerCase().includes(query.toLowerCase())
+    Object.values(o)
+      .join(" ")
+      .toLowerCase()
+      .includes((query || "").toLowerCase())
   );
-
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <Search
@@ -344,11 +346,18 @@ const Combo = ({
                 }`}
                 onClick={() => {
                   onChange(o[valueKey]);
-                  setQuery(o[displayKey]);
+                  setQuery(o.nama_pelanggan);
                   setOpen(false);
                 }}
               >
-                {o[displayKey]}
+                <div>
+                  <div style={{ fontWeight: 700 }}>
+                    {o.nama_pelanggan || o.label || o.nama_produk}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--ink-muted)" }}>
+                    {o.kontak || ""}
+                  </div>
+                </div>
               </button>
             ))
           )}
@@ -853,7 +862,8 @@ const TabHistori = () => {
             }}
             options={pelangganList.map((p) => ({
               value: p.id_pelanggan,
-              label: p.nama_pelanggan,
+              nama_pelanggan: p.nama_pelanggan,
+              kontak: p.kontak,
             }))}
             placeholder="Cari pelanggan..."
           />
@@ -1094,7 +1104,7 @@ const TabReward = () => {
                   <TD bold>{item.nama_produk}</TD>
                   <TD>
                     <Badge>
-                      <Star size={9} /> {item.poin_required} poin
+                      <Star size={9} /> {Number(item.poin_required || 0)} poin
                     </Badge>
                   </TD>
                   <TD>
@@ -1296,7 +1306,8 @@ const TabRedeem = () => {
           onChange={handlePelChange}
           options={pelangganList.map((p) => ({
             value: p.id_pelanggan,
-            label: p.nama_pelanggan,
+            nama_pelanggan: p.nama_pelanggan,
+            kontak: p.kontak,
           }))}
           placeholder="Cari pelanggan..."
         />
@@ -1319,7 +1330,10 @@ const TabRedeem = () => {
           }}
           options={rewardList.map((r) => ({
             value: r.id_reward,
-            label: `${r.nama_produk} — ${r.poin_required} poin`,
+            nama_pelanggan: r.nama_produk, // trick: biar Combo konsisten
+            kontak: `${r.poin_required.toLocaleString(
+              "id-ID"
+            )} poin dibutuhkan`,
           }))}
           placeholder="Cari reward..."
         />
@@ -1741,26 +1755,35 @@ const TabPengaturan = () => {
 // ═══════════════════════════════════════════
 const role = localStorage.getItem("role");
 
-const TABS = [
-  {
-    key: "redeem",
-    label: "Redeem Poin",
-    icon: RefreshCcw,
-    roles: ["admin", "kasir"],
-  },
-  {
-    key: "histori",
-    label: "Histori Poin",
-    icon: History,
-    roles: ["admin", "kasir"],
-  },
-  { key: "reward", label: "Reward Poin", icon: Gift, roles: ["admin"] },
-  { key: "pengaturan", label: "Pengaturan", icon: Settings, roles: ["admin"] },
-].filter((t) => t.roles.includes(role));
-
 const LoyaltyPoin = () => {
-  const [activeTab, setActiveTab] = useState(TABS[0]?.key || "histori");
+  const [role, setRole] = useState("");
 
+  useEffect(() => {
+    setRole(localStorage.getItem("role"));
+  }, []);
+
+  const TABS = [
+    {
+      key: "redeem",
+      label: "Redeem Poin",
+      icon: RefreshCcw,
+      roles: ["admin", "kasir"],
+    },
+    {
+      key: "histori",
+      label: "Histori Poin",
+      icon: History,
+      roles: ["admin", "kasir"],
+    },
+    { key: "reward", label: "Reward Poin", icon: Gift, roles: ["admin"] },
+    {
+      key: "pengaturan",
+      label: "Pengaturan",
+      icon: Settings,
+      roles: ["admin"],
+    },
+  ].filter((t) => t.roles.includes(role));
+  const [activeTab, setActiveTab] = useState("redeem");
   return (
     <div>
       <h1

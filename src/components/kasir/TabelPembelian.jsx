@@ -19,7 +19,7 @@ const TabelPembelian = ({
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       {/* HEADER */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 max-h-[72px]">
         <div>
           <h2 className="text-lg font-semibold text-gray-800">
             Daftar Pembelian

@@ -28,7 +28,7 @@ const Kasir = () => {
   // ─────────────────────────────────────────────────────────────
   const handlePrintStruk = (totalHutangFinal = s.totalHutangPelanggan) => {
     const tanggalStr = new Date().toLocaleString("id-ID");
-    const alamatToko = "Dusun Muhajirin, Desa Nusa Jaya";
+    const alamatToko = "Dusun Muhajirin, Desa Nusa Jaya Kec. Manggelewa";
 
     const itemRows = s.dataPembelian
       .map(
@@ -158,16 +158,13 @@ const Kasir = () => {
               background: #fff;
               color: #000;
             }
-
-            .struk {
-              width: 58mm;
-              max-width: 58mm;
-              margin: 0 auto;
-              padding: 2px;
-              box-sizing: border-box;
-              word-wrap: break-word;
-              overflow-wrap: break-word;
-            }
+.struk {
+  width: 58mm;
+  max-width: 58mm;
+  padding: 2mm;
+  box-sizing: border-box;
+  overflow: hidden;
+}
 
             .logo {
               display: block;
@@ -184,14 +181,14 @@ const Kasir = () => {
 
             .struk-alamat {
               text-align: center;
-              font-size: 10px;
+              font-size: 14px;
               margin-bottom: 4px;
               white-space: pre-line;
             }
 
             .subheader {
               text-align: center;
-              font-size: 9px;
+              font-size: 12px;
               margin-bottom: 4px;
             }
 
@@ -213,15 +210,21 @@ const Kasir = () => {
             .item-name {
               font-weight: 400;
               word-wrap: break-word;
-              font-size: 15px;
+              font-size: 14px;
             }
 
-            .item-info {
-              display: flex;
-              justify-content: space-between;
-              font-size: 15px;
-              font-weight: 200;
-            }
+         .item-info {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  font-size: 14px;
+  font-weight: 200;
+  column-gap: 6px;
+  align-items: start;
+}
+  .item-info span:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
 
             .total-section {
               border-top: 1px dashed #000;
@@ -364,6 +367,109 @@ const Kasir = () => {
 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Kasir.jsx
+
+  // ─────────────────────────────────────────────────────────────
+  // HANDLER SCAN BARCODE (Enter)
+  // ─────────────────────────────────────────────────────────────
+  const handleScanBarcode = (e) => {
+    if (e.key !== "Enter") return;
+
+    const query = e.target.value.trim().toLowerCase();
+    if (!query) return;
+
+    const produk = s.produkList.find(
+      (p) =>
+        p.barcode?.toLowerCase() === query ||
+        p.nama_produk?.toLowerCase() === query
+    );
+
+    if (!produk) {
+      s.showAlert("error", `Produk "${query}" tidak ditemukan`);
+      e.target.value = "";
+      return;
+    }
+
+    if (Number(produk.jumlah) <= 0) {
+      s.showAlert("error", `Stok "${produk.nama_produk}" habis`);
+      e.target.value = "";
+      return;
+    }
+
+    s.setDataPembelian((prev) => {
+      const idx = prev.findIndex((item) => item.id_produk === produk.id_produk);
+      if (idx !== -1) {
+        // Produk sudah ada → tambah qty
+        return prev.map((item, i) =>
+          i === idx ? { ...item, qty: Number(item.qty) + 1 } : item
+        );
+      }
+      // Produk baru → tambah ke list
+      return [
+        ...prev,
+        {
+          id_produk: produk.id_produk,
+          nama_produk: produk.nama_produk,
+          barcode: produk.barcode,
+          harga_jual: produk.harga_jual,
+          satuan: produk.satuan,
+          qty: 1,
+        },
+      ];
+    });
+
+    s.showAlert("success", `"${produk.nama_produk}" ditambahkan`);
+    e.target.value = "";
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // HANDLER CARI BARANG (Enter)
+  // ─────────────────────────────────────────────────────────────
+  const handleSearchEnter = (e) => {
+    if (e.key !== "Enter") return;
+
+    const query = s.searchProduk.trim();
+    if (!query) return;
+
+    if (s.filteredProdukList.length === 0) {
+      s.showAlert("error", `Produk "${query}" tidak ditemukan`);
+      return;
+    }
+
+    if (s.filteredProdukList.length === 1) {
+      // Hanya 1 hasil → langsung tambah
+      const produk = s.filteredProdukList[0];
+
+      s.setDataPembelian((prev) => {
+        const idx = prev.findIndex(
+          (item) => item.id_produk === produk.id_produk
+        );
+        if (idx !== -1) {
+          return prev.map((item, i) =>
+            i === idx ? { ...item, qty: Number(item.qty) + 1 } : item
+          );
+        }
+        return [
+          ...prev,
+          {
+            id_produk: produk.id_produk,
+            nama_produk: produk.nama_produk,
+            barcode: produk.barcode,
+            harga_jual: produk.harga_jual,
+            satuan: produk.satuan,
+            qty: 1,
+          },
+        ];
+      });
+
+      s.showAlert("success", `"${produk.nama_produk}" ditambahkan`);
+      s.setSearchProduk("");
+    } else {
+      // Lebih dari 1 hasil → buka modal daftar produk
+      s.setBarangModalOpen(true);
+    }
+  };
 
   // ─────────────────────────────────────────────────────────────
   // RENDER
@@ -514,6 +620,7 @@ const Kasir = () => {
                   ? "Scan barcode lalu Enter"
                   : "Memuat data stok..."
               }
+              onKeyDown={handleScanBarcode}
               className={`
                 h-11
                 rounded-2xl
@@ -553,6 +660,7 @@ const Kasir = () => {
               ref={searchInputRef}
               type="text"
               placeholder="Cari barang..."
+              onKeyDown={handleSearchEnter}
               className="
                 h-11
                 rounded-2xl
@@ -577,7 +685,7 @@ const Kasir = () => {
         </div>
 
         {/* MAIN GRID */}
-        <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-6">
           {/* TABLE */}
           <div className="2xl:col-span-2">
             <TabelPembelian

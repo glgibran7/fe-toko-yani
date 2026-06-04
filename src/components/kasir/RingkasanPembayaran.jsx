@@ -33,7 +33,7 @@ const RingkasanPembayaran = ({
           </div>
 
           {/* Subtotal */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-5">
             <label className="text-sm font-medium text-gray-600">
               Subtotal
             </label>

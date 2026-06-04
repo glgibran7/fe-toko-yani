@@ -35,6 +35,24 @@ export const useKasirState = () => {
   const [pelangganLoading, setPelangganLoading] = useState(false);
   const [pelangganError, setPelangganError] = useState(null);
 
+  useEffect(() => {
+    const fetchPelanggan = async () => {
+      try {
+        setPelangganLoading(true);
+        const res = await api.get("/pelanggan/", {
+          headers: getAuthHeaders(),
+        });
+        setPelangganList(res.data.data);
+      } catch (err) {
+        setPelangganError("Gagal load pelanggan");
+      } finally {
+        setPelangganLoading(false);
+      }
+    };
+
+    fetchPelanggan();
+  }, []);
+
   const [kontakModalOpen, setKontakModalOpen] = useState(false);
   const [searchPelanggan, setSearchPelanggan] = useState("");
   const [tambahPelangganModalOpen, setTambahPelangganModalOpen] =
