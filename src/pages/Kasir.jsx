@@ -26,7 +26,11 @@ const Kasir = () => {
   // ─────────────────────────────────────────────────────────────
   // PRINT STRUK
   // ─────────────────────────────────────────────────────────────
-  const handlePrintStruk = (totalHutangFinal = s.totalHutangPelanggan) => {
+  const handlePrintStruk = (
+    totalHutangFinal = s.totalHutangPelanggan,
+    earnedPoint,
+    totalPoint
+  ) => {
     const tanggalStr = new Date().toLocaleString("id-ID");
     const alamatToko = "Dusun Muhajirin, Desa Nusa Jaya Kec. Manggelewa";
 
@@ -67,6 +71,10 @@ const Kasir = () => {
     `
         : "";
 
+    // ─────────────────────────────────────────────────────────────
+    // POTONGAN KODE PADA handlePrintStruk (Kasir.jsx)
+    // ─────────────────────────────────────────────────────────────
+
     const hutangSection = s.newItem.nama_pelanggan
       ? `
       <div class="item-info">
@@ -88,6 +96,29 @@ const Kasir = () => {
       `
           : ""
       }
+    `
+      : "";
+
+    // Menggunakan fallback || 0 agar jika poin bernilai null/undefined tetap aman menampilkan angka 0
+    const poinSection = s.newItem.nama_pelanggan
+      ? `
+      <div class="item-info" style="border-top: 1px dotted #ccc; margin-top: 4px; padding-top: 4px;">
+        <span>Poin Diperoleh :</span>
+        <span>
+          ${Number(earnedPoint || 0).toLocaleString("id-ID")} Poin
+        </span>
+      </div>
+    `
+      : "";
+
+    const totalPoinSection = s.newItem.nama_pelanggan
+      ? `
+      <div class="item-info" style="border-top: 1px dotted #ccc; margin-top: 4px; padding-top: 4px;">
+        <span>Total Poin :</span>
+        <span>
+          ${Number(totalPoint || 0).toLocaleString("id-ID")} Poin
+        </span>
+      </div>
     `
       : "";
 
@@ -130,7 +161,8 @@ const Kasir = () => {
         </div>
 
         ${hutangSection}
-      </div>
+        ${poinSection}
+        ${totalPoinSection} </div>
     `;
 
     const printWindow = window.open("", "", "width=300,height=600");

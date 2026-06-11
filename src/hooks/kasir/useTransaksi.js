@@ -82,10 +82,14 @@ export const useTransaksi = ({
         showAlert("error", "Ada produk dengan ID tidak valid.");
         return;
       }
-      await api.post("/transaksi/", payload, { headers: getAuthHeaders() });
+      const response = await api.post("/transaksi/", payload, {
+        headers: getAuthHeaders(),
+      });
       const totalHutangFinal = await fetchTotalHutang(newItem.id_pelanggan); // ← await dan ambil nilai
+      const earnedPoint = response.data?.data?.earned_point ?? 0;
+      const totalPoint = response.data?.data?.total_point ?? 0;
       showAlert("success", "Transaksi berhasil disimpan!");
-      handlePrintStruk(totalHutangFinal); // ← pass langsung, tidak tunggu re-render
+      handlePrintStruk(totalHutangFinal, earnedPoint, totalPoint); // ← pass langsung, tidak tunggu re-render
       resetForm();
     } catch (err) {
       console.error(err);
